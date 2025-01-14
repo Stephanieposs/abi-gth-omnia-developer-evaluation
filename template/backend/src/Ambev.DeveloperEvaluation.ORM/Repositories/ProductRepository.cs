@@ -1,0 +1,117 @@
+﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Ambev.DeveloperEvaluation.ORM.Repositories;
+
+public class ProductRepository : IProductRepository
+{
+    private readonly DefaultContext _yourContext;
+
+    public ProductRepository(DefaultContext yourContext)
+    {
+        _yourContext = yourContext;
+    }
+
+    public async Task<Product> AddProduct(Product product)
+    {
+        await _yourContext.Products.AddAsync(product);
+        await _yourContext.SaveChangesAsync();
+        return product;
+    }
+
+    public async Task<IEnumerable<Product>> GetAllProducts()
+    {
+        return await _yourContext.Products.Include(p => p.Rating).ToListAsync();
+    }
+
+    public async Task<IEnumerable<string>> GetAllProductsCategories()
+    {
+        return await _yourContext.Products
+            .Select(p => p.Category)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<Product> GetProductById(int id)
+    {
+        return await _yourContext.Products
+            .Include(p => p.Rating)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public Task<IEnumerable<Product>> GetProductsFromCategory(string category)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    public async Task<Product> DeleteProduct(int id)
+    {
+        var product = await GetProductById(id);
+        if (product != null)
+        {
+            _yourContext.Products.Remove(product);
+            await _yourContext.SaveChangesAsync();
+        }
+
+        return product;
+    }
+
+    public async Task<Rating> UpdateRating(double newRate)
+{
+    // Tenta encontrar uma Rating com o valor especificado
+    var existingRating = await _yourContext.Ratings
+        .FirstOrDefaultAsync(r => r.Rate == newRate);
+
+    if (existingRating != null)
+    {
+        // Incrementa o Count se a Rating já existir
+        existingRating.IncrementCount();
+    }
+    else
+    {
+        // Cria uma nova Rating caso não exista
+        var newRating = new Rating
+        {
+            Rate = newRate,
+            Count = 1 // Inicializa o Count com 1
+        };
+
+        await _yourContext.Ratings.AddAsync(newRating);
+    }
+
+    // Salva as alterações no banco de dados
+    await _yourContext.SaveChangesAsync();
+
+    // Retorna a Rating atualizada ou recém-criada
+    return existingRating ?? new Rating { Rate = newRate, Count = 1 };
+}
+
+
+    public async Task<Product> UpdateProduct(Product product)
+    {
+        if (product != null)
+        {
+            _yourContext.Products.Update(product);
+            await _yourContext.SaveChangesAsync();
+        }
+
+
+        return product;
+    }
+
+    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category)
+    {
+        return await _yourContext.Products
+            .Include(p => p.Rating)
+            .Where(p => p.Category.ToLower() == category.ToLower())
+            .ToListAsync();
+    }
+
+}
