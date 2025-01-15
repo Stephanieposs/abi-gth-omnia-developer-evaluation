@@ -14,7 +14,7 @@ namespace Ambev.DeveloperEvaluation.Application.Products;
 public class ProductService : IProductService
 {
     public readonly IProductRepository _repo;
-    public readonly IProductService _service;
+    //public readonly IProductService _service;
 
     public ProductService(IProductRepository repo)
     {
