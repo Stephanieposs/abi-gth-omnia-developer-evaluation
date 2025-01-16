@@ -5,6 +5,7 @@ using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features;
 
@@ -28,20 +29,21 @@ public class CartController : Controller
         var carts = await _cartService.GetCartsAsync();
         return Ok(_mapper.Map<IEnumerable<CartDTO>>(carts));
 
-
-        //var carts = await _cartService.GetCartsAsync();
-        //return Ok(carts);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<CartDTO>> GetById(int id)
     {
         var cart = await _cartService.GetCartByIdAsync(id);
-        if (cart == null)
+
+        var cartDto = _mapper.Map<CartDTO>(cart);
+        //Console.WriteLine($"Mapped CartDTO Products: {cartDto.Products.ToList() }");
+
+        if (cart == null || cartDto ==null)
         {
-            return NotFound();
+            return NotFound("Cart Not Found");
         }
-        return Ok(_mapper.Map<CartDTO>(cart));
+        return Ok(cartDto);
     }
 
     [HttpPost]
@@ -53,11 +55,26 @@ public class CartController : Controller
         }
 
         var cart = _mapper.Map<Cart>(cartDto);
-        await _cartService.AddCartAsync(cart);
-        return CreatedAtAction(nameof(GetById), new { id = cart.Id }, _mapper.Map<CartDTO>(cart));
 
-        //await _cartService.AddCartAsync(cartDto);
-        //return CreatedAtAction(nameof(GetById), new { id = cartDto.Id }, cartDto);
+        if (!cart.CartProductsList.Any())
+        {
+            return BadRequest("No products specified for the cart.");
+        }
+
+        foreach (var productDto in cartDto.Products)
+        {
+
+            var cartProduct = new CartProduct
+            {
+                ProductId = productDto.ProductId,
+                Quantity = productDto.Quantity
+            };
+            //cart.CartProductsList.Add(cartProduct);
+        }
+
+
+        var createdCart = await _cartService.AddCartAsync(cart);
+        return Ok(createdCart);
     }
 
     [HttpPut("{id}")]
@@ -73,10 +90,24 @@ public class CartController : Controller
         {
             return NotFound();
         }
+        
+        //_mapper.Map(updatedCart, existingCart);
 
-        _mapper.Map(updatedCart, existingCart); // Update existing cart entity
+        existingCart.Date = updatedCart.Date;
+        existingCart.UserId = updatedCart.UserId;
+
+        foreach (var productDto in updatedCart.Products)
+        {
+            var product = existingCart.CartProductsList
+                .FirstOrDefault(p => p.ProductId == productDto.ProductId);
+            product.ProductId = productDto.ProductId;
+            product.Quantity = productDto.Quantity;
+            
+        }
+
         await _cartService.UpdateCartAsync(existingCart);
         return Ok(_mapper.Map<CartDTO>(existingCart));
+        
     }
 
     [HttpDelete("{id}")]

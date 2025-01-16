@@ -23,8 +23,9 @@ public class ProductService : IProductService
 
     public async Task AddAsync(Product product)
     {
-        await _repo.UpdateRating(product.Rating.Rate);
+        
         await _repo.AddProduct(product);
+        await _repo.UpdateRating(product.Id, product.Rating.Rate);
     }
 
     public async Task DeleteAsync(int id)
@@ -64,9 +65,9 @@ public class ProductService : IProductService
         existingProduct.Category = product.Category;
         existingProduct.Image = product.Image;
         existingProduct.Rating.Rate = product.Rating.Rate;
-        
-        _repo.UpdateRating(product.Rating.Rate);
 
+
+        await _repo.UpdateRating(product.Id, product.Rating.Rate);
         await _repo.UpdateProduct(existingProduct);
     }
 

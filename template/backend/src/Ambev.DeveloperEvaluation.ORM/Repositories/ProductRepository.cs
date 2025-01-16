@@ -63,6 +63,55 @@ public class ProductRepository : IProductRepository
         return product;
     }
 
+    public async Task<Rating> UpdateRating(int productId, double newRate)
+    {
+        // Encontra o produto com a Rating associada
+        var product = await _yourContext.Products
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product == null)
+        {
+            product.Rating = new Rating
+            {
+                Rate = newRate,
+                Count = 1 // Inicializa o Count com 1
+            };
+
+            await _yourContext.SaveChangesAsync();
+            return product.Rating;
+        }
+
+        // Tenta encontrar uma Rating associada ao novo valor
+        var existingRating = product.Rating;
+        
+        if (existingRating != null && existingRating.Rate == newRate)
+        {
+            // Se a Rating já existir, incrementa a contagem
+            existingRating.IncrementCount();
+        }
+        else
+        {
+            // Cria uma nova Rating associada ao produto
+            existingRating = new Rating
+            {
+                Rate = newRate,
+                Count = 1 // Inicializa o Count com 1
+            };
+
+            // Atualiza a Rating do produto
+            product.Rating = existingRating;
+        }
+
+        // Salva as alterações no banco de dados
+        await _yourContext.SaveChangesAsync();
+
+        // Retorna a Rating atualizada ou recém-criada
+        return existingRating;
+    }
+
+
+    /*
+
     public async Task<Rating> UpdateRating(double newRate)
 {
     // Tenta encontrar uma Rating com o valor especificado
@@ -93,7 +142,7 @@ public class ProductRepository : IProductRepository
     return existingRating ?? new Rating { Rate = newRate, Count = 1 };
 }
 
-
+    */
     public async Task<Product> UpdateProduct(Product product)
     {
         if (product != null)
