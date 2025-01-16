@@ -1,26 +1,19 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
+using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using AutoMapper;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography.X509Certificates;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Ambev.DeveloperEvaluation.Application.Carts;
+namespace Ambev.DeveloperEvaluation.Application;
 
-public class CartMappingProfile : Profile
+public class MappingProfile : Profile
 {
-    public readonly IMapper _mapper;
-    public CartMappingProfile()
+    public MappingProfile()
     {
-      
-
-        //CreateMap<Cart, CartDTO>();
-        //CreateMap<CartDTO, Cart>();
-        //CreateMap<CartProduct, CartProductDTO>();
-        //CreateMap<CartProductDTO, CartProduct>();
-
-        //CreateMap<Cart, CartDTO>().ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.CartProductsList.Select(item => _mapper.Map<CartProductDTO>(item.Product))));
-
-        // Mapeamento de Cart para CartDTO
         CreateMap<Cart, CartDTO>()
             .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.CartProductsList.Select(cp => new CartProductDTO
             {
@@ -40,5 +33,8 @@ public class CartMappingProfile : Profile
         CreateMap<CartProduct, CartProductDTO>()
             .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.Id));//.ReverseMap();
 
+
+        CreateMap<Sale, SaleDTO>().ReverseMap();
+        CreateMap<SaleItem, SaleItemDTO>().ReverseMap();
     }
 }

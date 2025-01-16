@@ -108,41 +108,6 @@ public class ProductRepository : IProductRepository
         // Retorna a Rating atualizada ou recém-criada
         return existingRating;
     }
-
-
-    /*
-
-    public async Task<Rating> UpdateRating(double newRate)
-{
-    // Tenta encontrar uma Rating com o valor especificado
-    var existingRating = await _yourContext.Ratings
-        .FirstOrDefaultAsync(r => r.Rate == newRate);
-
-    if (existingRating != null)
-    {
-        // Incrementa o Count se a Rating já existir
-        existingRating.IncrementCount();
-    }
-    else
-    {
-        // Cria uma nova Rating caso não exista
-        var newRating = new Rating
-        {
-            Rate = newRate,
-            Count = 1 // Inicializa o Count com 1
-        };
-
-        await _yourContext.Ratings.AddAsync(newRating);
-    }
-
-    // Salva as alterações no banco de dados
-    await _yourContext.SaveChangesAsync();
-
-    // Retorna a Rating atualizada ou recém-criada
-    return existingRating ?? new Rating { Rate = newRate, Count = 1 };
-}
-
-    */
     public async Task<Product> UpdateProduct(Product product)
     {
         if (product != null)
