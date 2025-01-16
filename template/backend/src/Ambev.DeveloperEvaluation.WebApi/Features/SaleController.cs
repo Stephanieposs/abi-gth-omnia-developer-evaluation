@@ -45,7 +45,7 @@ public class SalesController : ControllerBase
         }
 
         var createdSale = await _service.CreateSale(sale);
-        return Ok(createdSale);
+        return Ok(_mapper.Map<SaleDTO>(createdSale));
     }
 
     [HttpGet]
@@ -64,8 +64,8 @@ public class SalesController : ControllerBase
         return Ok(saleDto);
     }
 
-    [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateSale(int id, SaleDTO saleDto)
+    [HttpPut("{saleNumber}")]
+    public async Task<ActionResult> UpdateSale(int saleNumber, SaleDTO saleDto)
     {
 
         if (!ModelState.IsValid)
@@ -73,7 +73,7 @@ public class SalesController : ControllerBase
             return BadRequest(ModelState); 
         }
 
-        var existingSale = await _service.GetSaleById(id);
+        var existingSale = await _service.GetSaleById(saleNumber);
         if (existingSale == null)
         {
             return NotFound();
@@ -96,23 +96,27 @@ public class SalesController : ControllerBase
                 saleIt.UnitPrice = saleItem.UnitPrice;
                 saleIt.Quantity = saleItem.Quantity;
             }
-            // implementar codigo se não existir o Item
+            else
+            {
+                return NotFound("Item Not Found");
+            }
+
         }
 
         await _service.UpdateSale(existingSale);
         return Ok(_mapper.Map<SaleDTO>(existingSale));
     }
 
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteSale(int id)
+    [HttpDelete("{saleNumber}")]
+    public async Task<ActionResult> DeleteSale(int saleNumber)
     {
-        var sale = await _service.GetSaleById(id);
+        var sale = await _service.GetSaleById(saleNumber);
         if (sale == null)
         {
             return NotFound();
         }
 
-        await _service.DeleteSale(id);
-        return Ok(sale);
+        await _service.DeleteSale(saleNumber);
+        return Ok(_mapper.Map<SaleDTO>(sale));
     }
 }
