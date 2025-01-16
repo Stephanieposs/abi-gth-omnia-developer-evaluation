@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
+using System.ComponentModel;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 
@@ -20,6 +21,9 @@ public class SaleDTO
     public string CustomerName { get; set; }
     public int BranchId { get; set; }
     public string BranchName { get; set; }
+
+    [ReadOnly(true)]
+    public decimal TotalAmount { get; set; }
 
     public List<SaleItemDTO> Items { get; set; } = new List<SaleItemDTO>();
 }
