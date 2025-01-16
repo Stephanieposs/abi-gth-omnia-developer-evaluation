@@ -16,6 +16,9 @@ public class DefaultContext : DbContext
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartProduct> CartProducts { get; set; }
 
+    public DbSet<Sale> Sales { get; set; }
+    public DbSet<SaleItem> SalesItems { get; set; }
+
     public DefaultContext(DbContextOptions<DefaultContext> options) : base(options)
     {
     }
@@ -23,22 +26,8 @@ public class DefaultContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Product>().OwnsOne(p => p.Rating);
-        /*
-                // relacionamento entre Cart e  CartProduct
-                modelBuilder.Entity<CartProduct>()
-                    .HasKey(cp => cp.Id);
-
-
-                modelBuilder.Entity<CartProduct>()
-                    .HasOne<Product>()
-                    .WithMany()
-                    .HasForeignKey(c => c.ProductId);
-                */
-
-        //cp.CartId,
 
         modelBuilder.Entity<CartProduct>().HasKey(cp => cp.Id);
-        //modelBuilder.Entity<CartProduct>().HasNoKey();
 
         modelBuilder.Entity<CartProduct>()
             .HasOne(cp => cp.Cart)
@@ -52,12 +41,26 @@ public class DefaultContext : DbContext
             .HasForeignKey(cp => cp.ProductId)
             .HasConstraintName("FK_CartProduct_Product_ProductId");
 
+        modelBuilder.Entity<Sale>(entity =>
+        {
+            entity.HasKey(s => s.SaleNumber);
+            entity.Property(s => s.TotalAmount).HasColumnType("decimal(18,2)");
+            entity.Property(s => s.IsCancelled).HasDefaultValue(false);
+        });
 
-        /*
-        // Evitar a serialização de Product
-        modelBuilder.Entity<CartProduct>()
-            .Navigation(cp => cp.Product)
-            .AutoInclude(false);*/
+        modelBuilder.Entity<SaleItem>(entity =>
+        {
+            entity.HasKey(si => si.Id);
+            entity.Property(si => si.Quantity).IsRequired();
+            entity.Property(si => si.UnitPrice).HasColumnType("decimal(18,2)");
+            entity.Property(si => si.Discount).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            entity.Property(si => si.Total).HasColumnType("decimal(18,2)");
+            entity.Property(si => si.IsCancelled).HasDefaultValue(false);
+
+            entity.HasOne(si => si.Sale)
+                  .WithMany(s => s.Items)
+                  .HasForeignKey(si => si.SaleId);
+        });
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);

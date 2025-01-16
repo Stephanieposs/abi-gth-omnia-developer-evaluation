@@ -1,16 +1,21 @@
 using Ambev.DeveloperEvaluation.Application;
 using Ambev.DeveloperEvaluation.Application.Carts;
+using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
 using Ambev.DeveloperEvaluation.Application.Products;
+using Ambev.DeveloperEvaluation.Application.Sales;
+using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Common.HealthChecks;
 using Ambev.DeveloperEvaluation.Common.Logging;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Common.Validation;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.ORM.Repositories;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -29,12 +34,7 @@ public class Program
             builder.AddDefaultLogging();
 
             builder.Services.AddControllers();
-            /*builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-                });
-            */
+            
             builder.Services.AddEndpointsApiExplorer();
 
             builder.AddBasicHealthChecks();
@@ -46,6 +46,8 @@ public class Program
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<ICartRepository, CartRepository>();
 
+            builder.Services.AddScoped<ISaleService, SaleService>();
+            builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 
             builder.Services.AddDbContext<DefaultContext>(options =>
                 options.UseNpgsql(
@@ -60,7 +62,9 @@ public class Program
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);
-            builder.Services.AddAutoMapper(typeof(CartMappingProfile).Assembly);
+            builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+            
+            
 
             builder.Services.AddMediatR(cfg =>
             {

@@ -37,7 +37,6 @@ public class CartController : Controller
         var cart = await _cartService.GetCartByIdAsync(id);
 
         var cartDto = _mapper.Map<CartDTO>(cart);
-        //Console.WriteLine($"Mapped CartDTO Products: {cartDto.Products.ToList() }");
 
         if (cart == null || cartDto ==null)
         {
@@ -51,7 +50,7 @@ public class CartController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState); // Return validation errors if any
+            return BadRequest(ModelState); 
         }
 
         var cart = _mapper.Map<Cart>(cartDto);
@@ -82,7 +81,7 @@ public class CartController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState); // Return validation errors if any
+            return BadRequest(ModelState); 
         }
 
         var existingCart = await _cartService.GetCartByIdAsync(id);
