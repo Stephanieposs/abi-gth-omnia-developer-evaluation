@@ -22,50 +22,42 @@ public class DefaultContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Product>().OwnsOne(p => p.Rating);  //
-                                                                //
-        //modelBuilder.Entity<Cart>().Property(e => e.Id).ValueGeneratedOnAdd();
+        modelBuilder.Entity<Product>().OwnsOne(p => p.Rating);
+        /*
+                // relacionamento entre Cart e  CartProduct
+                modelBuilder.Entity<CartProduct>()
+                    .HasKey(cp => cp.Id);
 
-        //modelBuilder.Entity<Cart>().HasKey(c => c.Id);
-        //modelBuilder.Entity<CartProduct>().HasKey(c => c.ProductId);
 
-        //modelBuilder.Entity<Cart>().HasMany(g => g.CartProductsList).WithOne(c => c.Cart);
+                modelBuilder.Entity<CartProduct>()
+                    .HasOne<Product>()
+                    .WithMany()
+                    .HasForeignKey(c => c.ProductId);
+                */
 
-        // relacionamento entre Cart e  CartProduct
+        //cp.CartId,
+
+        modelBuilder.Entity<CartProduct>().HasKey(cp => cp.Id);
+        //modelBuilder.Entity<CartProduct>().HasNoKey();
+
         modelBuilder.Entity<CartProduct>()
-           .HasKey(cp => new { cp.ProductId }); 
-
+            .HasOne(cp => cp.Cart)
+            .WithMany(c => c.CartProductsList)
+            .HasForeignKey(cp => cp.CartId)
+            .HasConstraintName("FK_CartProduct_Cart_CartId");
 
         modelBuilder.Entity<CartProduct>()
-            .HasOne<Product>()
+            .HasOne(cp => cp.Product)
             .WithMany()
-            .HasForeignKey(c => c.ProductId);
-
-        // quantitiy é obrigatorio
-        modelBuilder.Entity<CartProduct>()
-            .Property(cp => cp.Quantity)
-            .IsRequired();
+            .HasForeignKey(cp => cp.ProductId)
+            .HasConstraintName("FK_CartProduct_Product_ProductId");
 
 
         /*
-        // Relacionamento entre Cart e CartProduct
-        modelBuilder.Entity<CartProduct>()
-            .HasOne(cp => cp.Cart) // Cart tem muitos CartProducts
-                .WithMany(c => c.CartProductsList) // Um CartProduct tem um Cart
-            .HasForeignKey(cp => cp.CartId); // A chave estrangeira em CartProduct para Cart
-        
-        // Relacionamento entre Product e CartProduct
-        modelBuilder.Entity<CartProduct>()
-            .HasOne(cp => cp.Product) // CartProduct tem um Product
-            .WithMany() // Product não precisa de coleção de CartProducts
-            .HasForeignKey(cp => cp.ProductId); // A chave estrangeira em CartProduct para Product
-        */
-
-
-        // Evitar a serialização de CartProduct.Product diretamente (se desejado)
+        // Evitar a serialização de Product
         modelBuilder.Entity<CartProduct>()
             .Navigation(cp => cp.Product)
-            .AutoInclude(false);
+            .AutoInclude(false);*/
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);

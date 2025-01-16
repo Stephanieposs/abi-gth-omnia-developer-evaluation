@@ -23,7 +23,7 @@ public interface IProductRepository
 
     Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category);
 
-    Task<Rating> UpdateRating(double newRate);
+    Task<Rating> UpdateRating(int id,double newRate);
 
 
 

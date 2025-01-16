@@ -21,7 +21,11 @@ public class CartRepository : ICartRepository
     public async Task<Cart> AddCartAsync(Cart cart)
     {
         //await ValidateProductReferences(cart.CartProductsList);
-
+        foreach (var cartProduct in cart.CartProductsList)
+        {
+            //cartProduct.Id = cart.Id;
+            _yourContext.CartProducts.Add(cartProduct);
+        }
 
         await _yourContext.Carts.AddAsync(cart);
         await _yourContext.SaveChangesAsync();
@@ -44,11 +48,18 @@ public class CartRepository : ICartRepository
     {
         //return await _yourContext.Carts.Include(p => p.Id).FirstOrDefaultAsync(p => p.Id == id);
 
-        return await _yourContext.Carts
-            .Include(c => c.CartProductsList)  // First get the cart products
-                .ThenInclude(cp => cp.Product) // Then for each cart product, get its product
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var cart = await _yourContext.Carts
+        .Include(c => c.CartProductsList)
+        .ThenInclude(cp => cp.Product)
+        .FirstOrDefaultAsync(c => c.Id == id);
 
+        if(cart == null)
+        {
+            return null;
+        }
+
+        Console.WriteLine($"CartId: {cart.Id}, ProductsCount: {cart.CartProductsList.Count}");
+        return cart;
 
     }
 
@@ -59,6 +70,7 @@ public class CartRepository : ICartRepository
         .Include(c => c.CartProductsList)
             .ThenInclude(cp => cp.Product)
         .ToListAsync();
+
     }
 
     public async Task<Cart?> UpdateCartAsync(Cart cart)
@@ -68,7 +80,7 @@ public class CartRepository : ICartRepository
         if (existingCart == null) return null;
 
         // Remove existing cart products
-        _yourContext.CartProducts.RemoveRange(existingCart.CartProductsList);
+        //_yourContext.CartProducts.RemoveRange(existingCart.CartProductsList);
 
         // Update cart properties
         existingCart.UserId = cart.UserId;

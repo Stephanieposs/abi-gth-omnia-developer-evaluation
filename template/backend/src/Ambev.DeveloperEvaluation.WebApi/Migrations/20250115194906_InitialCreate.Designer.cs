@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ambev.DeveloperEvaluation.WebApi.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    [Migration("20250115180907_FixProductRelation")]
-    partial class FixProductRelation
+    [Migration("20250115194906_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,7 +52,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Migrations
                     b.Property<int>("CartId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ProductId1")
+                    b.Property<int>("Id")
                         .HasColumnType("integer");
 
                     b.Property<int>("Quantity")
@@ -61,8 +61,6 @@ namespace Ambev.DeveloperEvaluation.WebApi.Migrations
                     b.HasKey("ProductId");
 
                     b.HasIndex("CartId");
-
-                    b.HasIndex("ProductId1");
 
                     b.ToTable("CartProducts");
                 });
@@ -87,8 +85,8 @@ namespace Ambev.DeveloperEvaluation.WebApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -153,19 +151,15 @@ namespace Ambev.DeveloperEvaluation.WebApi.Migrations
                         .WithMany("CartProductsList")
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Ambev.DeveloperEvaluation.Domain.Entities.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_CartProduct_Cart_CartId");
 
                     b.HasOne("Ambev.DeveloperEvaluation.Domain.Entities.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId1")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_CartProduct_Product_ProductId");
 
                     b.Navigation("Cart");
 

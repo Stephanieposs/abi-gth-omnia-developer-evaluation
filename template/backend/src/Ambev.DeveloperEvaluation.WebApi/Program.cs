@@ -29,6 +29,12 @@ public class Program
             builder.AddDefaultLogging();
 
             builder.Services.AddControllers();
+            /*builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+                });
+            */
             builder.Services.AddEndpointsApiExplorer();
 
             builder.AddBasicHealthChecks();
@@ -52,6 +58,7 @@ public class Program
 
             builder.RegisterDependencies();
 
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);
             builder.Services.AddAutoMapper(typeof(CartMappingProfile).Assembly);
 
