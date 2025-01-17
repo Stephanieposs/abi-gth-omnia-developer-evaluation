@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System.Reflection;
 using System.Xml;
 using static Ambev.DeveloperEvaluation.Domain.Entities.CartProduct;
@@ -21,6 +22,7 @@ public class DefaultContext : DbContext
 
     public DefaultContext(DbContextOptions<DefaultContext> options) : base(options)
     {
+
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -65,26 +67,29 @@ public class DefaultContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);
     }
-}
 
-public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
-{
-    public DefaultContext CreateDbContext(string[] args)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
     {
-        IConfigurationRoot configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
-            .Build();
-
-        var builder = new DbContextOptionsBuilder<DefaultContext>();
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-        builder.UseNpgsql(
-            connectionString,
-            b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi")
-        );
-
-        return new DefaultContext(builder.Options);
+        string dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"); 
+        if (!string.IsNullOrEmpty(dbConnectionString)) { optionsBuilder.UseNpgsql(dbConnectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi")); }
+        else { throw new InvalidOperationException("Environment variable 'DB_CONNECTION_STRING' is not set."); }
     }
 }
+
+//public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
+//{
+    //public DefaultContext CreateDbContext(string[] args)
+    //{
+        //IConfigurationRoot configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
+
+        //var builder = new DbContextOptionsBuilder<DefaultContext>();
+        //var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        
+
+        //builder.UseNpgsql(connectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi"));
+
+        //return new DefaultContext(builder.Options);
+    //}
+//}
 
