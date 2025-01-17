@@ -68,28 +68,29 @@ public class DefaultContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
+    /*
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
     {
         string dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"); 
         if (!string.IsNullOrEmpty(dbConnectionString)) { optionsBuilder.UseNpgsql(dbConnectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi")); }
         else { throw new InvalidOperationException("Environment variable 'DB_CONNECTION_STRING' is not set."); }
-    }
+    } */
 }
 
-//public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
-//{
-    //public DefaultContext CreateDbContext(string[] args)
-    //{
-        //IConfigurationRoot configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
+public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
+{
+    public DefaultContext CreateDbContext(string[] args)
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
 
-        //var builder = new DbContextOptionsBuilder<DefaultContext>();
-        //var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var builder = new DbContextOptionsBuilder<DefaultContext>();
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         
 
-        //builder.UseNpgsql(connectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi"));
+        builder.UseNpgsql(connectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi"));
 
-        //return new DefaultContext(builder.Options);
-    //}
-//}
+        return new DefaultContext(builder.Options);
+    }
+}
 

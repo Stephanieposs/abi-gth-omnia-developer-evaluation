@@ -51,11 +51,11 @@ public class Program
 
             builder.Services.AddDbContext<DefaultContext>(
                 
-                //options =>
-                //options.UseNpgsql(
-                //    builder.Configuration.GetConnectionString("DefaultConnection"),
-                //    b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
-                //)
+                options =>
+                options.UseNpgsql(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
+                )
             );
 
             builder.Services.AddJwtAuthentication(builder.Configuration);
