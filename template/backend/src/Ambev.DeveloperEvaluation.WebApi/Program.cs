@@ -49,11 +49,13 @@ public class Program
             builder.Services.AddScoped<ISaleService, SaleService>();
             builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 
-            builder.Services.AddDbContext<DefaultContext>(options =>
-                options.UseNpgsql(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
-                )
+            builder.Services.AddDbContext<DefaultContext>(
+                
+                //options =>
+                //options.UseNpgsql(
+                //    builder.Configuration.GetConnectionString("DefaultConnection"),
+                //    b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
+                //)
             );
 
             builder.Services.AddJwtAuthentication(builder.Configuration);

@@ -15,7 +15,8 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_CONNECTION_STRING": "Server=localhost;Port=5432;Database=DeveloperEvaluation;User Id=postgres;Password=senha123;"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7181;http://localhost:5119"
