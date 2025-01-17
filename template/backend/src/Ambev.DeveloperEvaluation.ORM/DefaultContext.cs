@@ -68,16 +68,13 @@ public class DefaultContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-<<<<<<< HEAD
     /*
-=======
->>>>>>> 9773950cabd286bc1171f5b2dff0266e16b91b7c
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
     {
         string dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"); 
         if (!string.IsNullOrEmpty(dbConnectionString)) { optionsBuilder.UseNpgsql(dbConnectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi")); }
         else { throw new InvalidOperationException("Environment variable 'DB_CONNECTION_STRING' is not set."); }
-<<<<<<< HEAD
     } */
 }
 
@@ -98,10 +95,6 @@ public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
     }
 }
 
-=======
-    }
-}
-
 //public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
 //{
     //public DefaultContext CreateDbContext(string[] args)
@@ -119,4 +112,3 @@ public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
     //}
 //}
 
->>>>>>> 9773950cabd286bc1171f5b2dff0266e16b91b7c
