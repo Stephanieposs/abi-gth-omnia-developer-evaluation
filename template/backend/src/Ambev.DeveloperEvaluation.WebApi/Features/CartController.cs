@@ -60,6 +60,7 @@ public class CartController : Controller
             return BadRequest("No products specified for the cart.");
         }
 
+        /*
         foreach (var productDto in cartDto.Products)
         {
 
@@ -70,7 +71,7 @@ public class CartController : Controller
             };
             cart.CartProductsList.Add(cartProduct);
         }
-
+        */
 
         var createdCart = await _cartService.AddCartAsync(cart);
         return Ok(createdCart);
