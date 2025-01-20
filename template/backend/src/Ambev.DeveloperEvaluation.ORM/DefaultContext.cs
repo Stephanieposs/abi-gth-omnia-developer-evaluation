@@ -29,7 +29,12 @@ public class DefaultContext : DbContext
     {
         modelBuilder.Entity<Product>().OwnsOne(p => p.Rating);
 
-
+        /*
+        modelBuilder.Entity<Cart>()
+        .HasMany(c => c.CartProductsList)
+        .WithOne()
+        .HasForeignKey(cp => cp.CartId)
+        .OnDelete(DeleteBehavior.Cascade);  */
 
         modelBuilder.Entity<CartProduct>().HasKey(cp => cp.Id);
 
@@ -75,44 +80,13 @@ public class DefaultContext : DbContext
 
             entity.HasOne(si => si.Sale)
                   .WithMany(s => s.Items)
-                  .HasForeignKey(si => si.SaleId); 
+                  .HasForeignKey(si => si.SaleId);
         });
-
-    
-
-        /*
-         // Configure Cart entity
-    modelBuilder.Entity<Cart>(entity =>
-    {
-        entity.HasKey(e => e.Id);
-        entity.Property(e => e.Date).IsRequired();
-        entity.HasMany(e => e.CartProductsList)
-              .WithOne(e => e.Cart)
-              .HasForeignKey(e => e.CartId);
-    });
-
-    // Configure CartProduct entity
-    modelBuilder.Entity<CartProduct>(entity =>
-    {
-        entity.HasKey(e => e.Id);
-        entity.HasOne(e => e.Product)
-              .WithMany()
-              .HasForeignKey(e => e.ProductId);
-    });
-         */
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);
     }
 
-    /*
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
-    {
-        string dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"); 
-        if (!string.IsNullOrEmpty(dbConnectionString)) { optionsBuilder.UseNpgsql(dbConnectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi")); }
-        else { throw new InvalidOperationException("Environment variable 'DB_CONNECTION_STRING' is not set."); }
-    } */
 }
 
 public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
@@ -132,20 +106,4 @@ public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
     }
 }
 
-//public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
-//{
-    //public DefaultContext CreateDbContext(string[] args)
-    //{
-        //IConfigurationRoot configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
-
-        //var builder = new DbContextOptionsBuilder<DefaultContext>();
-        //var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-        
-
-        //builder.UseNpgsql(connectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi"));
-
-        //return new DefaultContext(builder.Options);
-    //}
-//}
 

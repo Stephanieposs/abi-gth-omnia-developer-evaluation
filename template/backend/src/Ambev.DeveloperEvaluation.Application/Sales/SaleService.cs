@@ -42,46 +42,62 @@ public class SaleService : ISaleService
 
     public async Task<Sale> CreateSale(Sale sale)
     {
-        //var sale = _mapper.Map<Sale>(saleDto);
-
         var cart = await _cartService.GetCartByIdAsync(sale.CartId);
 
-        
         if (cart == null || cart.CartProductsList == null || !cart.CartProductsList.Any())
         {
             throw new Exception("Cart is empty or invalid.");
         }
 
-        foreach (var cartProduct in cart.CartProductsList)
+        
+        if (sale.Items == null)
+        {
+            sale.Items = new List<SaleItem>();
+            Console.WriteLine("console new List");
+        }
+
+        var newSaleItems = new List<SaleItem>();
+
+        foreach (var cartProduct in cart.CartProductsList)  // var items in sale.Items
         {
             var product = await _productService.GetByIdAsync(cartProduct.ProductId);
+            
+            if (product == null)
+            {
+                throw new Exception($"Product with ID {cartProduct.ProductId} not found.");
+            }
 
             var saleItem = new SaleItem
             {
                 ProductId = cartProduct.ProductId,
-                ProductItem = product,
+                ProductItem = cartProduct.Product,
                 ProductName = product.Title,
                 CartItem = cart,
                 CartItemId = cart.Id,
                 UnitPrice = product.Price,
                 Quantity = cartProduct.Quantity,
-                Total = cartProduct.Quantity * product.Price,
                 IsCancelled = false
             };
 
-            if (saleItem.CartItem == null || saleItem.CartItem.CartProductsList == null)
-            {
-                throw new InvalidOperationException("CartItem or its related data is null.");
-            }
 
             saleItem.CalculateDiscountAndValidate();
+            
+            saleItem.Total = saleItem.UnitPrice * saleItem.Quantity * (1 - saleItem.Discount);
 
-            sale.Items.Add(saleItem);
+            newSaleItems.Add(saleItem);
+
         }
 
+        sale.Items.AddRange(newSaleItems);
+
+        sale.TotalAmount = sale.Items.Sum(item => item.Total);
+
         var createdSale = await _repo.CreateSale(sale);
-        return createdSale;
+        return sale;
     }
+
+
+
     public async Task<Sale> UpdateSale(Sale sale)
     {
         var existingSale = await _repo.GetSaleById(sale.SaleNumber);
