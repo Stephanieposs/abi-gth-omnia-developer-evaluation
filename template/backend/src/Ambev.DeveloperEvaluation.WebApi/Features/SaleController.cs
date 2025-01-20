@@ -46,8 +46,9 @@ public class SalesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SaleDTO>>> GetAllSales()
     {
+        //_mapper.Map<IEnumerable<SaleDTO>>(sales)
         var sales = await _service.GetAllSales();
-        return Ok(_mapper.Map<IEnumerable<SaleDTO>>(sales));
+        return Ok(sales);
     }
 
     [HttpGet("{saleNumber}")]
@@ -56,7 +57,7 @@ public class SalesController : ControllerBase
         var sale = await _service.GetSaleById(saleNumber);
         if (sale == null) return NotFound();
         var saleDto = _mapper.Map<SaleDTO>(sale);
-        return Ok(saleDto);
+        return Ok(sale);
     }
 
     [HttpPut("{saleNumber}")]
@@ -80,7 +81,9 @@ public class SalesController : ControllerBase
         existingSale.CustomerName = saleDto.CustomerName;
         existingSale.Date = DateTime.UtcNow;
 
-        foreach (var saleItem in saleDto.Items)
+        var sale = _mapper.Map<Sale>(saleDto);
+
+        foreach (var saleItem in sale.Items)
         {
             var saleIt = existingSale.Items
                 .FirstOrDefault(p => p.Id == saleItem.Id);
@@ -98,7 +101,7 @@ public class SalesController : ControllerBase
         }
 
         await _service.UpdateSale(existingSale);
-        return Ok(_mapper.Map<SaleDTO>(existingSale));
+        return Ok(existingSale);
     }
 
     [HttpDelete("{saleNumber}")]
@@ -111,6 +114,6 @@ public class SalesController : ControllerBase
         }
 
         await _service.DeleteSale(saleNumber);
-        return Ok(_mapper.Map<SaleDTO>(sale));
+        return Ok(sale);
     }
 }

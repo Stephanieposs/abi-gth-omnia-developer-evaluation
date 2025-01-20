@@ -10,14 +10,14 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 
 public class SaleItemDTO
 {
-    [JsonIgnore]
-    public int Id { get; set; }
+    //[JsonIgnore]
+    //public int Id { get; set; }
     public int ProductId { get; set; }
 
-    [JsonIgnore]
-    public string ProductName { get; set; }
+    //[JsonIgnore]
+    //public string ProductName { get; set; }
     public int Quantity { get; set; }
 
-    [JsonIgnore]
-    public decimal UnitPrice { get; set; }
+    //[JsonIgnore]
+    //public decimal UnitPrice { get; set; }
 }

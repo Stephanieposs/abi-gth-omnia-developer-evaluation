@@ -1,5 +1,7 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+﻿using Ambev.DeveloperEvaluation.Application.Products.DTOs;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -9,22 +11,24 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features;
 [Route("api/[controller]")]
 public class ProductsController : Controller
 {
-    public readonly IProductService _productService;
+    private readonly IProductService _productService;
+    private readonly IMapper _mapper;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, IMapper mapper)
     {
         _productService = productService;
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Product>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAll()
     {
         var products = await _productService.GetAllAsync();
         return Ok(products);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Product>> GetById(int id)
+    public async Task<ActionResult<ProductDto>> GetById(int id)
     {
         var product = await _productService.GetByIdAsync(id);
         if (product == null)
@@ -48,21 +52,21 @@ public class ProductsController : Controller
         [FromQuery] int _size = 10,
         [FromQuery] string _order = "title asc")
     {
-        var result = await _productService.GetProductsByCategoryAsync(category); //, _page, _size, _order
-
-
-        return Ok(result);
+        var products = await _productService.GetProductsByCategoryAsync(category); //, _page, _size, _order
+        
+        return Ok(products);
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(Product product)
+    public async Task<ActionResult> Create(ProductDto productDto)
     {
+        var product = _mapper.Map<Product>(productDto);
         await _productService.AddAsync(product);
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, Product updatedProduct)
+    public async Task<ActionResult> Update(int id, ProductDto updatedProductDto)
     {
         var product = await _productService.GetByIdAsync(id);
         if (product == null)
@@ -70,9 +74,10 @@ public class ProductsController : Controller
             return NotFound();
         }
 
+        var updatedProduct = _mapper.Map<Product>(updatedProductDto);
         updatedProduct.Id = id;
         await _productService.UpdateAsync(updatedProduct);
-        return NoContent();
+        return Ok(updatedProduct);
     }
 
     [HttpDelete("{id}")]

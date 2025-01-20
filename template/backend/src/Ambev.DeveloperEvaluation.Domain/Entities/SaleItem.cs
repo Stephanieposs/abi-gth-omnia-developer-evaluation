@@ -18,9 +18,9 @@ public class SaleItem
 
     public int ProductId { get; set; }
 
-    [JsonIgnore]
+    //[JsonIgnore]
     public Product ProductItem { get; set; }
-    [JsonIgnore]
+    //[JsonIgnore]
     public Cart CartItem { get; set; }
 
     public int CartItemId { get; set; }

@@ -48,12 +48,15 @@ public class CartRepository : ICartRepository
     {
         //await _yourContext.Products.Include(p => p.Id).FirstOrDefaultAsync(p => p.Id == id);
         /*
-        var cart = await _yourContext.Carts.Include(c => c.CartProductsList)
-        .ThenInclude(cp => cp.Product)
-        .FirstOrDefaultAsync(c => c.Id == id);
-        */
+        
         var cart = await _yourContext.Carts
         .Include(cp => cp.CartProductsList)
+        .FirstOrDefaultAsync(c => c.Id == id);
+        */
+
+        var cart = await _yourContext.Carts
+        .Include(c => c.CartProductsList)
+        .ThenInclude(cp => cp.Product)
         .FirstOrDefaultAsync(c => c.Id == id);
 
         //var cart = await _yourContext.Carts.FirstOrDefaultAsync(c => c.Id == id);
