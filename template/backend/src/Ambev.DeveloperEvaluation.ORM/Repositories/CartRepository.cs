@@ -20,7 +20,7 @@ public class CartRepository : ICartRepository
 
     public async Task<Cart> AddCartAsync(Cart cart)
     {
-        //await ValidateProductReferences(cart.CartProductsList);
+        await ValidateProductReferences(cart.CartProductsList);
         foreach (var cartProduct in cart.CartProductsList)
         {
             //cartProduct.Id = cart.Id;
@@ -46,21 +46,29 @@ public class CartRepository : ICartRepository
 
     public async Task<Cart> GetCartByIdAsync(int id)
     {
-        //return await _yourContext.Carts.Include(p => p.Id).FirstOrDefaultAsync(p => p.Id == id);
-
-        var cart = await _yourContext.Carts
-        .Include(c => c.CartProductsList)
+        //await _yourContext.Products.Include(p => p.Id).FirstOrDefaultAsync(p => p.Id == id);
+        /*
+        var cart = await _yourContext.Carts.Include(c => c.CartProductsList)
         .ThenInclude(cp => cp.Product)
         .FirstOrDefaultAsync(c => c.Id == id);
+        */
+        var cart = await _yourContext.Carts
+        .Include(cp => cp.CartProductsList)
+        .FirstOrDefaultAsync(c => c.Id == id);
 
-        if(cart == null)
+        //var cart = await _yourContext.Carts.FirstOrDefaultAsync(c => c.Id == id);
+        if (!cart.CartProductsList.Any())
         {
-            return null;
+            throw new Exception($"Cart with Id {id} has no products.");
+        }
+        if (cart == null)
+        {
+            throw new Exception($"No cart found with Id {id}");
         }
 
-        Console.WriteLine($"CartId: {cart.Id}, ProductsCount: {cart.CartProductsList.Count}");
-        return cart;
+        
 
+        return cart;
     }
 
     public async Task<IEnumerable<Cart>> GetCartsAsync()
@@ -94,6 +102,8 @@ public class CartRepository : ICartRepository
         await _yourContext.SaveChangesAsync();
         return existingCart;
     }
+
+
 
     public async Task<(IEnumerable<Cart> Items, int TotalCount)> GetCartsAsync(
         int page = 1,

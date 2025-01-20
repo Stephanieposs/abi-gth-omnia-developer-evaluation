@@ -29,6 +29,8 @@ public class DefaultContext : DbContext
     {
         modelBuilder.Entity<Product>().OwnsOne(p => p.Rating);
 
+
+
         modelBuilder.Entity<CartProduct>().HasKey(cp => cp.Id);
 
         modelBuilder.Entity<CartProduct>()
@@ -48,21 +50,56 @@ public class DefaultContext : DbContext
             entity.HasKey(s => s.SaleNumber);
             entity.Property(s => s.TotalAmount).HasColumnType("decimal(18,2)");
             entity.Property(s => s.IsCancelled).HasDefaultValue(false);
+            entity.HasMany(e => e.Items)
+                  .WithOne(e => e.Sale)
+                  .HasForeignKey(e => e.SaleId);
         });
 
         modelBuilder.Entity<SaleItem>(entity =>
         {
             entity.HasKey(si => si.Id);
-            entity.Property(si => si.Quantity).IsRequired();
-            entity.Property(si => si.UnitPrice).HasColumnType("decimal(18,2)");
+            //entity.Property(si => si.Quantity).IsRequired();
+            //entity.Property(si => si.UnitPrice).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Discount).HasColumnType("decimal(18,2)").HasDefaultValue(0);
             entity.Property(si => si.Total).HasColumnType("decimal(18,2)");
             entity.Property(si => si.IsCancelled).HasDefaultValue(false);
 
+            entity.HasOne(si => si.ProductItem)
+              .WithMany()
+              .HasForeignKey(si => si.ProductId);
+            entity.HasOne(si => si.CartItem)
+                  .WithMany()
+                  .HasForeignKey(si => si.CartItemId)
+                  .HasConstraintName("FK_SalesItems_Carts_CartItemId")
+                  .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasOne(si => si.Sale)
                   .WithMany(s => s.Items)
-                  .HasForeignKey(si => si.SaleId);
+                  .HasForeignKey(si => si.SaleId); 
         });
+
+    
+
+        /*
+         // Configure Cart entity
+    modelBuilder.Entity<Cart>(entity =>
+    {
+        entity.HasKey(e => e.Id);
+        entity.Property(e => e.Date).IsRequired();
+        entity.HasMany(e => e.CartProductsList)
+              .WithOne(e => e.Cart)
+              .HasForeignKey(e => e.CartId);
+    });
+
+    // Configure CartProduct entity
+    modelBuilder.Entity<CartProduct>(entity =>
+    {
+        entity.HasKey(e => e.Id);
+        entity.HasOne(e => e.Product)
+              .WithMany()
+              .HasForeignKey(e => e.ProductId);
+    });
+         */
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);

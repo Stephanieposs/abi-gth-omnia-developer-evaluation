@@ -16,6 +16,7 @@ public class Sale
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int SaleNumber { get; set; }
     public DateTime Date { get; set; }
+    public int CartId { get; set; }
     public int CustomerId { get; set; }
     public string CustomerName { get; set; }
     public int BranchId { get; set; }
