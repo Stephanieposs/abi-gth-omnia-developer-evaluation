@@ -17,8 +17,4 @@ public class Product
     public string Image {  get; set; }
 
     public Rating Rating { get; set; }
-
-    
-
-    
 }

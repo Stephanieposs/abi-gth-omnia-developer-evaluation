@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts;
 using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
+using Ambev.DeveloperEvaluation.Application.Sales;
 using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Services;
@@ -19,33 +20,27 @@ public class SalesController : ControllerBase
     {
         _service = service;
         _mapper = mapper;
+        
     }
 
-    [HttpPost]     //("from-cart/{cartId}")]
+    [HttpPost]
     public async Task<ActionResult> CreateSale(SaleDTO saleDto)
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState); 
+            return BadRequest(ModelState);
         }
 
-        var sale = _mapper.Map<Sale>(saleDto);
-
-        foreach (var items in saleDto.Items)
+        try
         {
-
-            var saleItem = new SaleItem
-            {
-                ProductName = items.ProductName,  
-                ProductId = items.ProductId,
-                Quantity = items.Quantity,
-                UnitPrice = items.UnitPrice,
-            };
-            //cart.CartProductsList.Add(cartProduct);
+            var sale = _mapper.Map<Sale>(saleDto);
+            var createdSale = await _service.CreateSale(sale);
+            return Ok(createdSale);
         }
-
-        var createdSale = await _service.CreateSale(sale);
-        return Ok(_mapper.Map<SaleDTO>(createdSale));
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpGet]
@@ -91,10 +86,9 @@ public class SalesController : ControllerBase
                 .FirstOrDefault(p => p.Id == saleItem.Id);
             if (saleIt != null)
             {
-                
-                saleIt.ProductName = saleItem.ProductName;
                 saleIt.UnitPrice = saleItem.UnitPrice;
                 saleIt.Quantity = saleItem.Quantity;
+                // update total ?
             }
             else
             {

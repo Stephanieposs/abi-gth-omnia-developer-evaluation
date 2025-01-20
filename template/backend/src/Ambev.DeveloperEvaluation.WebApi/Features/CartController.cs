@@ -68,7 +68,7 @@ public class CartController : Controller
                 ProductId = productDto.ProductId,
                 Quantity = productDto.Quantity
             };
-            //cart.CartProductsList.Add(cartProduct);
+            cart.CartProductsList.Add(cartProduct);
         }
 
 
