@@ -31,7 +31,7 @@ public class CartController : Controller
         return Ok(_mapper.Map<IEnumerable<CartDTO>>(carts));
 
     }
-    */
+    
     [HttpGet]
     public async Task<ActionResult<object>> GetAll(
     [FromQuery] int _page = 1,
@@ -44,6 +44,33 @@ public class CartController : Controller
         return Ok(new
         {
             data = carts,
+            totalItems,
+            currentPage = _page,
+            totalPages
+        });
+    }*/
+
+    [HttpGet]
+    public async Task<ActionResult<object>> GetAll(
+    [FromQuery] int _page = 1,
+    [FromQuery] int _size = 10,
+    [FromQuery] string _order = "id asc"   //,
+    //[FromQuery] Dictionary<string, string> filters = null
+        )
+    {
+        // Extract filters from query parameters
+        var filtersExtract = Request.Query
+            .Where(q => !q.Key.StartsWith("_")) // Exclude pagination and order keys
+            .ToDictionary(q => q.Key, q => q.Value.ToString());
+
+        // Call service to get filtered, ordered, and paginated cart
+        var (items, totalItems) = await _cartService.GetFilteredAndOrderedCartsAsync(_page, _size, _order, filtersExtract);
+        var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
+
+        // Return paginated and filtered response
+        return Ok(new
+        {
+            data = items,
             totalItems,
             currentPage = _page,
             totalPages

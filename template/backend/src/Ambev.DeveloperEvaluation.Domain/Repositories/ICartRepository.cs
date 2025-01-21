@@ -17,4 +17,6 @@ public interface ICartRepository
     Task<Cart?> UpdateCartAsync(Cart cart);
     Task<Cart> DeleteCartAsync(int id);
     Task<(IEnumerable<Cart> Carts, int TotalItems)> GetPagedCartsAsync(int page, int size, string order);
+    Task<(IEnumerable<Cart> Items, int TotalItems)> GetFilteredAndOrderedCartsAsync(
+    int page, int size, string order, Dictionary<string, string> filters);
 }

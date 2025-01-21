@@ -82,43 +82,16 @@ public class ProductService : IProductService
     }
 
 
-    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category) // , int page, int size, string order
+    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category) 
     {
         var products = await _repo.GetProductsByCategoryAsync(category);
         return products;
+    }
 
-        //return JsonSerializer.Serialize(products);
-
-
-        /*
-        if (!string.IsNullOrEmpty(order))
-        {
-            var orderParams = order.Split(',');
-            foreach (var param in orderParams)
-            {
-                var parts = param.Trim().Split(' ');
-                var field = parts[0];
-                var direction = parts.Length > 1 && parts[1].ToLower() == "desc" ? "Descending" : "Ascending";
-
-                products = products.AsQueryable().OrderBy($"{field} {direction}").ToList();
-            }
-        }
-
-        // Pagination
-        var totalItems = products.Count();
-        var totalPages = (int)Math.Ceiling(totalItems / (double)size);
-        var pagedProducts = products.Skip((page - 1) * size).Take(size).ToList();
-        
-        return new
-        {
-            data = pagedProducts,
-            totalItems,
-            currentPage = page,
-            totalPages
-        };*/
-
-
-
+    public async Task<(IEnumerable<Product> Items, int TotalItems)> GetFilteredAndOrderedProductsAsync(
+    int page, int size, string order, Dictionary<string, string> filters)
+    {
+        return await _repo.GetFilteredAndOrderedProductsAsync(page, size, order, filters);
     }
 
 }

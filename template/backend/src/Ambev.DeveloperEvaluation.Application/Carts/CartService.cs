@@ -61,7 +61,11 @@ public class CartService : ICartService
         return await _repo.GetPagedCartsAsync(page, size, order);
     }
 
-
+    public async Task<(IEnumerable<Cart> Items, int TotalItems)> GetFilteredAndOrderedCartsAsync(
+    int page, int size, string order, Dictionary<string, string> filters)
+    {
+        return await _repo.GetFilteredAndOrderedCartsAsync(page, size, order, filters);
+    }
 
 
 }
