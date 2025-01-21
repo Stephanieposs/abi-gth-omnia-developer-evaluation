@@ -166,4 +166,59 @@ public class ProductRepository : IProductRepository
         return (products, totalItems);
     }
 
+
+    public async Task<(IEnumerable<Product> Items, int TotalItems)> GetFilteredAndOrderedProductsAsync(
+    int page, int size, string order, Dictionary<string, string> filters)
+    {
+        var query = _yourContext.Products.AsQueryable(); // Assuming Products is your DbSet<Product>
+
+        // Apply Filters
+        foreach (var filter in filters)
+        {
+            var field = filter.Key;
+            var value = filter.Value;
+
+            if (value.Contains("*"))
+            {
+                var pattern = value.Replace("*", ""); // Remove asterisk for partial matches
+                query = query.Where(p => EF.Functions.Like(EF.Property<string>(p, field), $"%{pattern}%"));
+            }
+            else if (field.StartsWith("_min") || field.StartsWith("_max"))
+            {
+                var baseField = field.Replace("_min", "").Replace("_max", "");
+                if (field.StartsWith("_min"))
+                    query = query.Where(p => EF.Property<decimal>(p, baseField) >= decimal.Parse(value));
+                else if (field.StartsWith("_max"))
+                    query = query.Where(p => EF.Property<decimal>(p, baseField) <= decimal.Parse(value));
+            }
+            else
+            {
+                query = query.Where(p => EF.Property<string>(p, field) == value);
+            }
+        }
+
+        // Apply Ordering
+        if (!string.IsNullOrEmpty(order))
+        {
+            foreach (var orderClause in order.Split(','))
+            {
+                var parts = orderClause.Trim().Split(' ');
+                var property = parts[0];
+                var direction = parts.Length > 1 && parts[1].ToLower() == "desc" ? "descending" : "ascending";
+                query = query.OrderBy($"{property} {direction}");
+            }
+        }
+        else
+        {
+            query = query.OrderBy(p => p.Id); // Default order by ID
+        }
+
+        // Pagination
+        var totalItems = await query.CountAsync();
+        var items = await query.Skip((page - 1) * size).Take(size).ToListAsync();
+
+        return (items, totalItems);
+    }
+
+
 }

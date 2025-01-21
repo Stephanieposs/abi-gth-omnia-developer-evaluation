@@ -19,5 +19,8 @@ public interface IProductService
     Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category);
     Task<(IEnumerable<Product> Products, int TotalItems)> GetPagedProductsAsync(int page, int size, string order);
     Task<(IEnumerable<Product> Products, int TotalItems)> GetPagedProductsByCategoryAsync(string category, int page, int size, string order);
+    Task<(IEnumerable<Product> Items, int TotalItems)> GetFilteredAndOrderedProductsAsync(
+    int page, int size, string order, Dictionary<string, string> filters);
+
 
 }

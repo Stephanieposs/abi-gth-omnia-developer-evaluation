@@ -27,7 +27,7 @@ public class ProductsController : Controller
         var products = await _productService.GetAllAsync();
         return Ok(products);
     }
-    */
+    
     [HttpGet]
     public async Task<ActionResult<object>> GetAll(
     [FromQuery] int _page = 1,
@@ -40,6 +40,31 @@ public class ProductsController : Controller
         return Ok(new
         {
             data = products,
+            totalItems,
+            currentPage = _page,
+            totalPages
+        });
+    }
+*/
+    [HttpGet]
+    public async Task<ActionResult<object>> GetAll(
+    [FromQuery] int _page = 1,
+    [FromQuery] int _size = 10,
+    [FromQuery] string _order = "id asc" // ,
+    //[FromQuery] Dictionary<string, string> filters = null
+        )
+    {
+        // Extract filters from query parameters
+        var filtersExtract = Request.Query
+            .Where(q => !q.Key.StartsWith("_")) // Exclude pagination and order keys
+            .ToDictionary(q => q.Key, q => q.Value.ToString());
+
+        var (items, totalItems) = await _productService.GetFilteredAndOrderedProductsAsync(_page, _size, _order, filtersExtract); //filters ?? new Dictionary<string, string>()
+        var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
+
+        return Ok(new
+        {
+            data = items,
             totalItems,
             currentPage = _page,
             totalPages
