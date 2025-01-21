@@ -2,6 +2,8 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -20,39 +22,11 @@ public class ProductsController : Controller
         _mapper = mapper;
     }
 
-    /*
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAll()
-    {
-        var products = await _productService.GetAllAsync();
-        return Ok(products);
-    }
-    
     [HttpGet]
     public async Task<ActionResult<object>> GetAll(
     [FromQuery] int _page = 1,
     [FromQuery] int _size = 10,
-    [FromQuery] string _order = "title asc")
-    {
-        var (products, totalItems) = await _productService.GetPagedProductsAsync(_page, _size, _order);
-        var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
-
-        return Ok(new
-        {
-            data = products,
-            totalItems,
-            currentPage = _page,
-            totalPages
-        });
-    }
-*/
-    [HttpGet]
-    public async Task<ActionResult<object>> GetAll(
-    [FromQuery] int _page = 1,
-    [FromQuery] int _size = 10,
-    [FromQuery] string _order = "id asc" // ,
-    //[FromQuery] Dictionary<string, string> filters = null
-        )
+    [FromQuery] string _order = "id asc")
     {
         // Extract filters from query parameters
         var filtersExtract = Request.Query
@@ -62,6 +36,7 @@ public class ProductsController : Controller
         var (items, totalItems) = await _productService.GetFilteredAndOrderedProductsAsync(_page, _size, _order, filtersExtract); //filters ?? new Dictionary<string, string>()
         var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
 
+        // Return customized json
         return Ok(new
         {
             data = items,
@@ -82,6 +57,7 @@ public class ProductsController : Controller
         return Ok(product);
     }
 
+    // return all categories 
     [HttpGet("categories")]
     public async Task<ActionResult<IEnumerable<string>>> GetAllCategories()
     {
@@ -89,20 +65,7 @@ public class ProductsController : Controller
         return Ok(categories);
     }
 
-    /*
-    [HttpGet("category/{category}")]
-    public async Task<ActionResult<object>> GetByCategory(
-        string category,
-        [FromQuery] int _page = 1,
-        [FromQuery] int _size = 10,
-        [FromQuery] string _order = "title asc")
-    {
-        var result = await _productService.GetProductsByCategoryAsync(category); //, _page, _size, _order
-
-
-        return Ok(result);
-    }*/
-
+    // return products with a determined category
     [HttpGet("category/{category}")]
     public async Task<ActionResult<object>> GetByCategory(
     string category,
@@ -125,6 +88,13 @@ public class ProductsController : Controller
     [HttpPost]
     public async Task<ActionResult> Create(ProductDto productDto)
     {
+        if (!ModelState.IsValid)
+        {
+            throw new ValidationException(ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => new ValidationFailure("", e.ErrorMessage)));
+        }
+
         var product = _mapper.Map<Product>(productDto);
         await _productService.AddAsync(product);
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
@@ -133,6 +103,13 @@ public class ProductsController : Controller
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, ProductDto updatedProductDto)
     {
+        if (!ModelState.IsValid)
+        {
+            throw new ValidationException(ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => new ValidationFailure("", e.ErrorMessage)));
+        }
+
         var product = await _productService.GetByIdAsync(id);
         if (product == null)
         {

@@ -4,6 +4,8 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,44 +24,12 @@ public class CartController : Controller
         _mapper = mapper;
     }
 
-    /*
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<CartDTO>>> GetAll()
-    {
-        //_mapper.Map<IEnumerable<CartDTO>>(carts)
-        var carts = await _cartService.GetCartsAsync();
-        return Ok(carts);
-
-    }
-    
     [HttpGet]
     public async Task<ActionResult<object>> GetAll(
     [FromQuery] int _page = 1,
     [FromQuery] int _size = 10,
-    [FromQuery] string _order = "title asc")
+    [FromQuery] string _order = "id asc")
     {
-        var (carts, totalItems) = await _cartService.GetPagedCartsAsync(_page, _size, _order);
-        var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
-
-        return Ok(new
-        {
-            data = carts,
-            totalItems,
-            currentPage = _page,
-            totalPages
-        });
-    }*/
-
-    [HttpGet]
-    public async Task<ActionResult<object>> GetAll(
-    [FromQuery] int _page = 1,
-    [FromQuery] int _size = 10,
-    [FromQuery] string _order = "id asc" // ,
-    //[FromQuery] Dictionary<string, string> filters = null
-        )
-    {
-        
-
         // Extract filters from query parameters
         var filtersExtract = Request.Query
             .Where(q => !q.Key.StartsWith("_")) // Exclude pagination and order keys
@@ -68,6 +38,7 @@ public class CartController : Controller
         var (items, totalItems) = await _cartService.GetFilteredAndOrderedCartsAsync(_page, _size, _order, filtersExtract); //filters ?? new Dictionary<string, string>()
         var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
 
+        // return customized json
         return Ok(new
         {
             data = items,
@@ -82,8 +53,6 @@ public class CartController : Controller
     {
         var cart = await _cartService.GetCartByIdAsync(id);
 
-        //var cartDto = _mapper.Map<CartDTO>(cart);
-
         if (cart == null)
         {
             return NotFound("Cart Not Found");
@@ -96,7 +65,9 @@ public class CartController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState); 
+            throw new ValidationException(ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => new ValidationFailure("", e.ErrorMessage)));
         }
 
         var cart = _mapper.Map<Cart>(cartDto);
@@ -105,19 +76,6 @@ public class CartController : Controller
         {
             return BadRequest("No products specified for the cart.");
         }
-
-        /*
-        foreach (var productDto in cartDto.Products)
-        {
-
-            var cartProduct = new CartProduct
-            {
-                ProductId = productDto.ProductId,
-                Quantity = productDto.Quantity
-            };
-            cart.CartProductsList.Add(cartProduct);
-        }
-        */
 
         var createdCart = await _cartService.AddCartAsync(cart);
         return Ok(createdCart);
@@ -128,7 +86,9 @@ public class CartController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState); 
+            throw new ValidationException(ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => new ValidationFailure("", e.ErrorMessage)));
         }
 
         var existingCart = await _cartService.GetCartByIdAsync(id);
@@ -136,12 +96,40 @@ public class CartController : Controller
         {
             return NotFound();
         }
-        
-        //_mapper.Map(updatedCart, existingCart);
 
         existingCart.Date = updatedCart.Date;
         existingCart.UserId = updatedCart.UserId;
 
+        // Update products in the cart
+        var updatedProductIds = updatedCart.Products.Select(p => p.ProductId).ToHashSet();
+
+        // Remove products that are no longer in the updated cart
+        existingCart.CartProductsList.RemoveAll(p => !updatedProductIds.Contains(p.ProductId));
+
+        // Add or update products
+        foreach (var productDto in updatedCart.Products)
+        {
+            var product = existingCart.CartProductsList
+                .FirstOrDefault(p => p.ProductId == productDto.ProductId);
+
+            if (product == null)
+            {
+                // Add new product if it doesn't exist
+                existingCart.CartProductsList.Add(new CartProduct
+                {
+                    ProductId = productDto.ProductId,
+                    Quantity = productDto.Quantity,
+                    CartId = existingCart.Id // Ensure the CartId is set
+                });
+            }
+            else
+            {
+                // Update existing product
+                product.Quantity = productDto.Quantity;
+            }
+        }
+
+        /*
         foreach (var productDto in updatedCart.Products)
         {
             var product = existingCart.CartProductsList
@@ -150,10 +138,9 @@ public class CartController : Controller
             product.Quantity = productDto.Quantity;
             
         }
-
+        */
         await _cartService.UpdateCartAsync(existingCart);
         return Ok(existingCart);
-        
     }
 
     [HttpDelete("{id}")]

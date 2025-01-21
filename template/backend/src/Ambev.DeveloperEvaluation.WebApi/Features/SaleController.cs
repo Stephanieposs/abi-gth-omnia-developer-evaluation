@@ -5,6 +5,8 @@ using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features;
@@ -20,7 +22,7 @@ public class SalesController : ControllerBase
     {
         _service = service;
         _mapper = mapper;
-        
+
     }
 
     [HttpPost]
@@ -28,7 +30,9 @@ public class SalesController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState);
+            throw new ValidationException(ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => new ValidationFailure("", e.ErrorMessage)));
         }
 
         try
@@ -46,7 +50,6 @@ public class SalesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SaleDTO>>> GetAllSales()
     {
-        //_mapper.Map<IEnumerable<SaleDTO>>(sales)
         var sales = await _service.GetAllSales();
         return Ok(sales);
     }
@@ -63,10 +66,11 @@ public class SalesController : ControllerBase
     [HttpPut("{saleNumber}")]
     public async Task<ActionResult> UpdateSale(int saleNumber, SaleDTO saleDto)
     {
-
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState); 
+            throw new ValidationException(ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => new ValidationFailure("", e.ErrorMessage)));
         }
 
         var existingSale = await _service.GetSaleById(saleNumber);
@@ -91,13 +95,11 @@ public class SalesController : ControllerBase
             {
                 saleIt.UnitPrice = saleItem.UnitPrice;
                 saleIt.Quantity = saleItem.Quantity;
-                // update total ?
             }
             else
             {
                 return NotFound("Item Not Found");
             }
-
         }
 
         await _service.UpdateSale(existingSale);
