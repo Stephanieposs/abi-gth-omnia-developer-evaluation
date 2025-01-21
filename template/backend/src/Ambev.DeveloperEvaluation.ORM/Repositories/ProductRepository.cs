@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq.Dynamic.Core;
 
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
 
@@ -41,13 +42,10 @@ public class ProductRepository : IProductRepository
     public async Task<Product> GetProductById(int id)
     {
         return await _yourContext.Products
-            .Include(p => p.Rating)
+            .Include(p => p.Rating)  
             .FirstOrDefaultAsync(p => p.Id == id);
-    }
 
-    public Task<IEnumerable<Product>> GetProductsFromCategory(string category)
-    {
-        throw new NotImplementedException();
+        //return await _yourContext.Products.FindAsync(id);
     }
 
 
@@ -126,6 +124,46 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Rating)
             .Where(p => p.Category.ToLower() == category.ToLower())
             .ToListAsync();
+    }
+
+    public async Task<(IEnumerable<Product> Products, int TotalItems)> GetPagedProductsAsync(int page, int size, string order)
+    {
+        var query = _yourContext.Products.AsQueryable();
+
+        if (!string.IsNullOrEmpty(order))
+        {
+            foreach (var orderClause in order.Split(','))
+            {
+                var parts = orderClause.Trim().Split(' ');
+                var property = parts[0];
+                var direction = parts.Length > 1 && parts[1].ToLower() == "desc" ? "descending" : "ascending";
+                query = query.OrderBy($"{property} {direction}");
+            }
+        }
+
+        var totalItems = await query.CountAsync();
+        var products = await query.Skip((page - 1) * size).Take(size).ToListAsync();
+        return (products, totalItems);
+    }
+
+    public async Task<(IEnumerable<Product> Products, int TotalItems)> GetPagedProductsByCategoryAsync(string category, int page, int size, string order)
+    {
+        var query = _yourContext.Products.Where(p => p.Category == category);
+
+        if (!string.IsNullOrEmpty(order))
+        {
+            foreach (var orderClause in order.Split(','))
+            {
+                var parts = orderClause.Trim().Split(' ');
+                var property = parts[0];
+                var direction = parts.Length > 1 && parts[1].ToLower() == "desc" ? "descending" : "ascending";
+                query = query.OrderBy($"{property} {direction}");
+            }
+        }
+
+        var totalItems = await query.CountAsync();
+        var products = await query.Skip((page - 1) * size).Take(size).ToListAsync();
+        return (products, totalItems);
     }
 
 }

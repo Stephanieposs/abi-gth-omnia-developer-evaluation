@@ -12,8 +12,8 @@ public class Rating
     
     public double Rate { get; set; }
 
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    //[JsonIgnore]
+    //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int Count { get;  set; }
 
     public void IncrementCount()
