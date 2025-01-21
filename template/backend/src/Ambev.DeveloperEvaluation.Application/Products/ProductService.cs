@@ -77,7 +77,7 @@ public class ProductService : IProductService
         existingProduct.Rating.Rate = product.Rating.Rate;
 
 
-        await _repo.UpdateRating(product.Id, product.Rating.Rate);
+        //await _repo.UpdateRating(product.Id, product.Rating.Rate);
         await _repo.UpdateProduct(existingProduct);
     }
 

@@ -8,6 +8,7 @@ using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -64,6 +65,7 @@ public class CartService : ICartService
     public async Task<(IEnumerable<Cart> Items, int TotalItems)> GetFilteredAndOrderedCartsAsync(
     int page, int size, string order, Dictionary<string, string> filters)
     {
+
         return await _repo.GetFilteredAndOrderedCartsAsync(page, size, order, filters);
     }
 

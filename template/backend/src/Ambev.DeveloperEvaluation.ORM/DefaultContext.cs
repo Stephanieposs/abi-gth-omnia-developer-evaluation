@@ -29,6 +29,13 @@ public class DefaultContext : DbContext
     {
         modelBuilder.Entity<Product>().OwnsOne(p => p.Rating);
 
+        /*
+        modelBuilder.Entity<Cart>()
+        .HasMany(c => c.CartProductsList)
+        .WithOne()
+        .HasForeignKey(cp => cp.CartId)
+        .OnDelete(DeleteBehavior.Cascade);  */
+
         modelBuilder.Entity<CartProduct>().HasKey(cp => cp.Id);
 
         modelBuilder.Entity<CartProduct>()
@@ -48,16 +55,28 @@ public class DefaultContext : DbContext
             entity.HasKey(s => s.SaleNumber);
             entity.Property(s => s.TotalAmount).HasColumnType("decimal(18,2)");
             entity.Property(s => s.IsCancelled).HasDefaultValue(false);
+            entity.HasMany(e => e.Items)
+                  .WithOne(e => e.Sale)
+                  .HasForeignKey(e => e.SaleId);
         });
 
         modelBuilder.Entity<SaleItem>(entity =>
         {
             entity.HasKey(si => si.Id);
-            entity.Property(si => si.Quantity).IsRequired();
-            entity.Property(si => si.UnitPrice).HasColumnType("decimal(18,2)");
+            //entity.Property(si => si.Quantity).IsRequired();
+            //entity.Property(si => si.UnitPrice).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Discount).HasColumnType("decimal(18,2)").HasDefaultValue(0);
             entity.Property(si => si.Total).HasColumnType("decimal(18,2)");
             entity.Property(si => si.IsCancelled).HasDefaultValue(false);
+
+            entity.HasOne(si => si.ProductItem)
+              .WithMany()
+              .HasForeignKey(si => si.ProductId);
+            entity.HasOne(si => si.CartItem)
+                  .WithMany()
+                  .HasForeignKey(si => si.CartItemId)
+                  .HasConstraintName("FK_SalesItems_Carts_CartItemId")
+                  .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(si => si.Sale)
                   .WithMany(s => s.Items)
@@ -68,14 +87,6 @@ public class DefaultContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    /*
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
-    {
-        string dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"); 
-        if (!string.IsNullOrEmpty(dbConnectionString)) { optionsBuilder.UseNpgsql(dbConnectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi")); }
-        else { throw new InvalidOperationException("Environment variable 'DB_CONNECTION_STRING' is not set."); }
-    } */
 }
 
 public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
@@ -95,20 +106,4 @@ public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
     }
 }
 
-//public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
-//{
-    //public DefaultContext CreateDbContext(string[] args)
-    //{
-        //IConfigurationRoot configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
-
-        //var builder = new DbContextOptionsBuilder<DefaultContext>();
-        //var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-        
-
-        //builder.UseNpgsql(connectionString, b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.WebApi"));
-
-        //return new DefaultContext(builder.Options);
-    //}
-//}
 
