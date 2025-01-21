@@ -42,13 +42,10 @@ public class ProductRepository : IProductRepository
     public async Task<Product> GetProductById(int id)
     {
         return await _yourContext.Products
-            .Include(p => p.Rating)
+            .Include(p => p.Rating)  
             .FirstOrDefaultAsync(p => p.Id == id);
-    }
 
-    public Task<IEnumerable<Product>> GetProductsFromCategory(string category)
-    {
-        throw new NotImplementedException();
+        //return await _yourContext.Products.FindAsync(id);
     }
 
 

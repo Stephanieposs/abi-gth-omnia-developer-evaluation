@@ -19,7 +19,7 @@ public interface IProductRepository
     Task<IEnumerable<string>> GetAllProductsCategories(); 
 
     // return all products from a determined category
-    Task<IEnumerable<Product>> GetProductsFromCategory(string category);
+    //Task<IEnumerable<Product>> GetProductsFromCategory(string category);
 
     Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category);
 

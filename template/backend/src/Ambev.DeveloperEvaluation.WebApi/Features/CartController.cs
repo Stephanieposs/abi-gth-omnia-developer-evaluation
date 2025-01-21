@@ -26,9 +26,9 @@ public class CartController : Controller
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CartDTO>>> GetAll()
     {
-
+        //_mapper.Map<IEnumerable<CartDTO>>(carts)
         var carts = await _cartService.GetCartsAsync();
-        return Ok(_mapper.Map<IEnumerable<CartDTO>>(carts));
+        return Ok(carts);
 
     }
     */
@@ -55,13 +55,13 @@ public class CartController : Controller
     {
         var cart = await _cartService.GetCartByIdAsync(id);
 
-        var cartDto = _mapper.Map<CartDTO>(cart);
+        //var cartDto = _mapper.Map<CartDTO>(cart);
 
-        if (cart == null || cartDto ==null)
+        if (cart == null)
         {
             return NotFound("Cart Not Found");
         }
-        return Ok(cartDto);
+        return Ok(cart);
     }
 
     [HttpPost]
@@ -79,6 +79,7 @@ public class CartController : Controller
             return BadRequest("No products specified for the cart.");
         }
 
+        /*
         foreach (var productDto in cartDto.Products)
         {
 
@@ -87,9 +88,9 @@ public class CartController : Controller
                 ProductId = productDto.ProductId,
                 Quantity = productDto.Quantity
             };
-            //cart.CartProductsList.Add(cartProduct);
+            cart.CartProductsList.Add(cartProduct);
         }
-
+        */
 
         var createdCart = await _cartService.AddCartAsync(cart);
         return Ok(createdCart);
@@ -124,7 +125,7 @@ public class CartController : Controller
         }
 
         await _cartService.UpdateCartAsync(existingCart);
-        return Ok(_mapper.Map<CartDTO>(existingCart));
+        return Ok(existingCart);
         
     }
 
@@ -139,9 +140,6 @@ public class CartController : Controller
 
         await _cartService.DeleteCartAsync(id);
         return Ok(cart);
-
     }
-
-
 
 }
