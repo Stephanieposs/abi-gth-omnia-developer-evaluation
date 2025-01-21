@@ -20,11 +20,30 @@ public class ProductsController : Controller
         _mapper = mapper;
     }
 
+    /*
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetAll()
     {
         var products = await _productService.GetAllAsync();
         return Ok(products);
+    }
+    */
+    [HttpGet]
+    public async Task<ActionResult<object>> GetAll(
+    [FromQuery] int _page = 1,
+    [FromQuery] int _size = 10,
+    [FromQuery] string _order = "title asc")
+    {
+        var (products, totalItems) = await _productService.GetPagedProductsAsync(_page, _size, _order);
+        var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
+
+        return Ok(new
+        {
+            data = products,
+            totalItems,
+            currentPage = _page,
+            totalPages
+        });
     }
 
     [HttpGet("{id}")]
@@ -45,6 +64,7 @@ public class ProductsController : Controller
         return Ok(categories);
     }
 
+    /*
     [HttpGet("category/{category}")]
     public async Task<ActionResult<object>> GetByCategory(
         string category,
@@ -52,9 +72,29 @@ public class ProductsController : Controller
         [FromQuery] int _size = 10,
         [FromQuery] string _order = "title asc")
     {
-        var products = await _productService.GetProductsByCategoryAsync(category); //, _page, _size, _order
-        
-        return Ok(products);
+        var result = await _productService.GetProductsByCategoryAsync(category); //, _page, _size, _order
+
+
+        return Ok(result);
+    }*/
+
+    [HttpGet("category/{category}")]
+    public async Task<ActionResult<object>> GetByCategory(
+    string category,
+    [FromQuery] int _page = 1,
+    [FromQuery] int _size = 10,
+    [FromQuery] string _order = "title asc")
+    {
+        var (products, totalItems) = await _productService.GetPagedProductsByCategoryAsync(category, _page, _size, _order);
+        var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
+
+        return Ok(new
+        {
+            data = products,
+            totalItems,
+            currentPage = _page,
+            totalPages
+        });
     }
 
     [HttpPost]
