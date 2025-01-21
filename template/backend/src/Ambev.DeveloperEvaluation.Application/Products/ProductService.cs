@@ -46,6 +46,16 @@ public class ProductService : IProductService
         return categories;
     }
 
+    public async Task<(IEnumerable<Product> Products, int TotalItems)> GetPagedProductsAsync(int page, int size, string order)
+    {
+        return await _repo.GetPagedProductsAsync(page, size, order);
+    }
+
+    public async Task<(IEnumerable<Product> Products, int TotalItems)> GetPagedProductsByCategoryAsync(string category, int page, int size, string order)
+    {
+        return await _repo.GetPagedProductsByCategoryAsync(category, page, size, order);
+    }
+
     public async Task<Product> GetByIdAsync(int id)
     {
         return await _repo.GetProductById(id);

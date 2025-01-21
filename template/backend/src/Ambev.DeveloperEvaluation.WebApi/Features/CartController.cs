@@ -22,6 +22,7 @@ public class CartController : Controller
         _mapper = mapper;
     }
 
+    /*
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CartDTO>>> GetAll()
     {
@@ -29,6 +30,24 @@ public class CartController : Controller
         var carts = await _cartService.GetCartsAsync();
         return Ok(_mapper.Map<IEnumerable<CartDTO>>(carts));
 
+    }
+    */
+    [HttpGet]
+    public async Task<ActionResult<object>> GetAll(
+    [FromQuery] int _page = 1,
+    [FromQuery] int _size = 10,
+    [FromQuery] string _order = "title asc")
+    {
+        var (carts, totalItems) = await _cartService.GetPagedCartsAsync(_page, _size, _order);
+        var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
+
+        return Ok(new
+        {
+            data = carts,
+            totalItems,
+            currentPage = _page,
+            totalPages
+        });
     }
 
     [HttpGet("{id}")]

@@ -25,6 +25,7 @@ public interface IProductRepository
 
     Task<Rating> UpdateRating(int id,double newRate);
 
-
+    Task<(IEnumerable<Product> Products, int TotalItems)> GetPagedProductsAsync(int page, int size, string order);
+    Task<(IEnumerable<Product> Products, int TotalItems)> GetPagedProductsByCategoryAsync(string category, int page, int size, string order);
 
 }

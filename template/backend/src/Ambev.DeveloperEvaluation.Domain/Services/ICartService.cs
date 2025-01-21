@@ -17,4 +17,5 @@ public interface ICartService
     Task<Cart> AddCartAsync(Cart cart);
     Task<Cart> UpdateCartAsync(Cart cart);
     Task<Cart> DeleteCartAsync(int id);
+    Task<(IEnumerable<Cart> Carts, int TotalItems)> GetPagedCartsAsync(int page, int size, string order);
 }

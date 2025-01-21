@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq.Dynamic.Core;
 
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
 
@@ -30,6 +31,26 @@ public class CartRepository : ICartRepository
         await _yourContext.Carts.AddAsync(cart);
         await _yourContext.SaveChangesAsync();
         return cart;
+    }
+
+    public async Task<(IEnumerable<Cart> Carts, int TotalItems)> GetPagedCartsAsync(int page, int size, string order)
+    {
+        var query = _yourContext.Carts.AsQueryable();
+
+        if (!string.IsNullOrEmpty(order))
+        {
+            foreach (var orderClause in order.Split(','))
+            {
+                var parts = orderClause.Trim().Split(' ');
+                var property = parts[0];
+                var direction = parts.Length > 1 && parts[1].ToLower() == "desc" ? "descending" : "ascending";
+                query = query.OrderBy($"{property} {direction}");
+            }
+        }
+
+        var totalItems = await query.CountAsync();
+        var carts = await query.Skip((page - 1) * size).Take(size).ToListAsync();
+        return (carts, totalItems);
     }
 
     public async Task<Cart> DeleteCartAsync(int id)
