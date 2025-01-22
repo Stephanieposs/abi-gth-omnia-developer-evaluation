@@ -6,6 +6,7 @@ using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class CartController : Controller
 {
     public readonly ICartService _cartService;
@@ -25,6 +27,7 @@ public class CartController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<object>> GetAll(
     [FromQuery] int _page = 1,
     [FromQuery] int _size = 10,
@@ -49,6 +52,7 @@ public class CartController : Controller
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<CartDTO>> GetById(int id)
     {
         var cart = await _cartService.GetCartByIdAsync(id);
@@ -61,6 +65,7 @@ public class CartController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult> Create(CartDTO cartDto)
     {
         if (!ModelState.IsValid)
@@ -82,6 +87,7 @@ public class CartController : Controller
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<ActionResult> Update(int id, CartDTO updatedCart)
     {
         if (!ModelState.IsValid)
@@ -134,6 +140,7 @@ public class CartController : Controller
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<ActionResult> Delete(int id)
     {
         var cart = await _cartService.GetCartByIdAsync(id);

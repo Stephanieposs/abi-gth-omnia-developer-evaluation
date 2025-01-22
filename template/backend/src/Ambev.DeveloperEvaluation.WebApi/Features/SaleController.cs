@@ -7,12 +7,14 @@ using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class SalesController : ControllerBase
 {
     public readonly ISaleService _service;
@@ -26,6 +28,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult> CreateSale(SaleDTO saleDto)
     {
         if (!ModelState.IsValid)
@@ -48,6 +51,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<SaleDTO>>> GetAllSales()
     {
         var sales = await _service.GetAllSales();
@@ -55,6 +59,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet("{saleNumber}")]
+    [Authorize]
     public async Task<ActionResult<SaleDTO>> GetSaleById(int saleNumber)
     {
         var sale = await _service.GetSaleById(saleNumber);
@@ -64,6 +69,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpPut("{saleNumber}")]
+    [Authorize]
     public async Task<ActionResult> UpdateSale(int saleNumber, SaleDTO saleDto)
     {
         if (!ModelState.IsValid)
@@ -107,6 +113,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpDelete("{saleNumber}")]
+    [Authorize]
     public async Task<ActionResult> DeleteSale(int saleNumber)
     {
         var sale = await _service.GetSaleById(saleNumber);
