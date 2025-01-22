@@ -1,6 +1,8 @@
-﻿using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
+﻿using Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
+using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
 using Ambev.DeveloperEvaluation.Application.Products.DTOs;
 using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
+using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using AutoMapper;
 using System;
@@ -41,6 +43,6 @@ public class MappingProfile : Profile
         CreateMap<Product, ProductDto>().ReverseMap();
         CreateMap<Rating, RatingDto>().ReverseMap();
 
-
+        
     }
 }
