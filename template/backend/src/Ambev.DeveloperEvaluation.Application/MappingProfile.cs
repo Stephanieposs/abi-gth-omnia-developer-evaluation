@@ -32,7 +32,7 @@ public class MappingProfile : Profile
 
         // Map CartProduct to CartProductDTO
         CreateMap<CartProduct, CartProductDTO>()
-            .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.Id));//.ReverseMap();
+            .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.Id));
 
 
         CreateMap<Sale, SaleDTO>().ReverseMap();
@@ -40,5 +40,7 @@ public class MappingProfile : Profile
 
         CreateMap<Product, ProductDto>().ReverseMap();
         CreateMap<Rating, RatingDto>().ReverseMap();
+
+
     }
 }

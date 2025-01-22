@@ -17,12 +17,8 @@ public class SaleItem
     public Sale Sale { get; set; }
 
     public int ProductId { get; set; }
-
-    //[JsonIgnore]
     public Product ProductItem { get; set; }
-    //[JsonIgnore]
     public Cart CartItem { get; set; }
-
     public int CartItemId { get; set; }
 
     public string ProductName { get; set; }

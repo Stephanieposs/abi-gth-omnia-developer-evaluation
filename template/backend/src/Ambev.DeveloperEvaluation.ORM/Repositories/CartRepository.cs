@@ -24,7 +24,6 @@ public class CartRepository : ICartRepository
         await ValidateProductReferences(cart.CartProductsList);
         foreach (var cartProduct in cart.CartProductsList)
         {
-            //cartProduct.Id = cart.Id;
             _yourContext.CartProducts.Add(cartProduct);
         }
 
@@ -56,7 +55,6 @@ public class CartRepository : ICartRepository
     public async Task<(IEnumerable<Cart> Items, int TotalItems)> GetFilteredAndOrderedCartsAsync(
     int page, int size, string order, Dictionary<string, string> filters)
     {
-        //var query = _yourContext.Carts.AsQueryable();
         var query = _yourContext.Carts
         .Include(c => c.CartProductsList) // Ensure related data is included
         .AsQueryable(); 
@@ -125,20 +123,11 @@ public class CartRepository : ICartRepository
 
     public async Task<Cart> GetCartByIdAsync(int id)
     {
-        //await _yourContext.Products.Include(p => p.Id).FirstOrDefaultAsync(p => p.Id == id);
-        /*
-        
-        var cart = await _yourContext.Carts
-        .Include(cp => cp.CartProductsList)
-        .FirstOrDefaultAsync(c => c.Id == id);
-        */
-
         var cart = await _yourContext.Carts
         .Include(c => c.CartProductsList)
         .ThenInclude(cp => cp.Product)
         .FirstOrDefaultAsync(c => c.Id == id);
 
-        //var cart = await _yourContext.Carts.FirstOrDefaultAsync(c => c.Id == id);
         if (!cart.CartProductsList.Any())
         {
             throw new Exception($"Cart with Id {id} has no products.");
@@ -148,19 +137,15 @@ public class CartRepository : ICartRepository
             throw new Exception($"No cart found with Id {id}");
         }
 
-        
-
         return cart;
     }
 
     public async Task<IEnumerable<Cart>> GetCartsAsync()
     {
-        //return await _yourContext.Carts.Include(p => p.Id).ToListAsync();
         return await _yourContext.Carts
         .Include(c => c.CartProductsList)
             .ThenInclude(cp => cp.Product)
         .ToListAsync();
-
     }
 
     public async Task<Cart?> UpdateCartAsync(Cart cart)
@@ -169,16 +154,10 @@ public class CartRepository : ICartRepository
         var existingCart = await GetCartByIdAsync(cart.Id);
         if (existingCart == null) return null;
 
-        // Remove existing cart products
-        //_yourContext.CartProducts.RemoveRange(existingCart.CartProductsList);
-
         // Update cart properties
         existingCart.UserId = cart.UserId;
         existingCart.Date = cart.Date;
         existingCart.CartProductsList = cart.CartProductsList;
-
-        // Validate new product references
-        //await ValidateProductReferences(existingCart.CartProductsList);
 
         _yourContext.Carts.Update(existingCart);
         await _yourContext.SaveChangesAsync();

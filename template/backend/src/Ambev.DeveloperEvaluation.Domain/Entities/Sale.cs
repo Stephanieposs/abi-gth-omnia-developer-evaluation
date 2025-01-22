@@ -10,8 +10,6 @@ namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
 public class Sale
 {
-
-    //public int Id { get; set; }
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int SaleNumber { get; set; }

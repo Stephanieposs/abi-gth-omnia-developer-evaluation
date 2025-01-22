@@ -219,6 +219,4 @@ public class ProductRepository : IProductRepository
 
         return (items, totalItems);
     }
-
-
 }

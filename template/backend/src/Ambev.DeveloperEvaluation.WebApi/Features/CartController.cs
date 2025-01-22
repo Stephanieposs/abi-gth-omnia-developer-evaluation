@@ -129,16 +129,6 @@ public class CartController : Controller
             }
         }
 
-        /*
-        foreach (var productDto in updatedCart.Products)
-        {
-            var product = existingCart.CartProductsList
-                .FirstOrDefault(p => p.ProductId == productDto.ProductId);
-            product.ProductId = productDto.ProductId;
-            product.Quantity = productDto.Quantity;
-            
-        }
-        */
         await _cartService.UpdateCartAsync(existingCart);
         return Ok(existingCart);
     }

@@ -29,13 +29,6 @@ public class DefaultContext : DbContext
     {
         modelBuilder.Entity<Product>().OwnsOne(p => p.Rating);
 
-        /*
-        modelBuilder.Entity<Cart>()
-        .HasMany(c => c.CartProductsList)
-        .WithOne()
-        .HasForeignKey(cp => cp.CartId)
-        .OnDelete(DeleteBehavior.Cascade);  */
-
         modelBuilder.Entity<CartProduct>().HasKey(cp => cp.Id);
 
         modelBuilder.Entity<CartProduct>()
@@ -63,8 +56,6 @@ public class DefaultContext : DbContext
         modelBuilder.Entity<SaleItem>(entity =>
         {
             entity.HasKey(si => si.Id);
-            //entity.Property(si => si.Quantity).IsRequired();
-            //entity.Property(si => si.UnitPrice).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Discount).HasColumnType("decimal(18,2)").HasDefaultValue(0);
             entity.Property(si => si.Total).HasColumnType("decimal(18,2)");
             entity.Property(si => si.IsCancelled).HasDefaultValue(false);

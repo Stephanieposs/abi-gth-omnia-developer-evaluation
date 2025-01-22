@@ -16,7 +16,6 @@ namespace Ambev.DeveloperEvaluation.Application.Sales;
 public class SaleService : ISaleService
 {
     private readonly ISaleRepository _repo;
-    //private readonly HttpClient _httpClient;
     private readonly IMapper _mapper;
     private readonly ICartService _cartService;
     private readonly IProductService _productService;
@@ -24,7 +23,6 @@ public class SaleService : ISaleService
     public SaleService(ISaleRepository repo, IMapper mapper, ICartService cartService, IProductService productService)
     {
         _repo = repo;
-        //_httpClient = httpClient;
         _mapper = mapper;
         _cartService = cartService;
         _productService = productService;
@@ -58,7 +56,7 @@ public class SaleService : ISaleService
 
         var newSaleItems = new List<SaleItem>();
 
-        foreach (var cartProduct in cart.CartProductsList)  // var items in sale.Items
+        foreach (var cartProduct in cart.CartProductsList)  
         {
             var product = await _productService.GetByIdAsync(cartProduct.ProductId);
             

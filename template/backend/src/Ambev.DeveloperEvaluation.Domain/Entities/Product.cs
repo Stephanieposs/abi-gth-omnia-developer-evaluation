@@ -9,7 +9,6 @@ namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
 public class Product
 {
-    //[JsonIgnore]
     public int Id { get; set; }
     public string Title { get; set; }
     public decimal Price { get; set; }
