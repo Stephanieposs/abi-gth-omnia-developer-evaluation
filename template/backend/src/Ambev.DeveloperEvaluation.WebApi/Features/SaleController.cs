@@ -14,7 +14,6 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class SalesController : ControllerBase
 {
     public readonly ISaleService _service;
@@ -28,7 +27,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult> CreateSale(SaleDTO saleDto)
     {
         if (!ModelState.IsValid)
@@ -51,7 +50,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult<IEnumerable<SaleDTO>>> GetAllSales()
     {
         var sales = await _service.GetAllSales();
@@ -59,7 +58,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet("{saleNumber}")]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult<SaleDTO>> GetSaleById(int saleNumber)
     {
         var sale = await _service.GetSaleById(saleNumber);
@@ -69,7 +68,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpPut("{saleNumber}")]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult> UpdateSale(int saleNumber, SaleDTO saleDto)
     {
         if (!ModelState.IsValid)
@@ -113,7 +112,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpDelete("{saleNumber}")]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult> DeleteSale(int saleNumber)
     {
         var sale = await _service.GetSaleById(saleNumber);

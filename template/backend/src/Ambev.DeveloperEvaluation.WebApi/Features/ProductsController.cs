@@ -12,7 +12,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+//[Authorize]
 public class ProductsController : Controller
 {
     private readonly IProductService _productService;
@@ -25,7 +25,7 @@ public class ProductsController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<object>> GetAll(
     [FromQuery] int _page = 1,
     [FromQuery] int _size = 10,
@@ -50,7 +50,7 @@ public class ProductsController : Controller
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<ProductDto>> GetById(int id)
     {
         var product = await _productService.GetByIdAsync(id);
@@ -63,7 +63,7 @@ public class ProductsController : Controller
 
     // return all categories 
     [HttpGet("categories")]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<IEnumerable<string>>> GetAllCategories()
     {
         var categories = await _productService.GetAllProductCategoriesAsync();
@@ -72,7 +72,7 @@ public class ProductsController : Controller
 
     // return products with a determined category
     [HttpGet("category/{category}")]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<object>> GetByCategory(
     string category,
     [FromQuery] int _page = 1,
@@ -92,7 +92,7 @@ public class ProductsController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult> Create(ProductDto productDto)
     {
         if (!ModelState.IsValid)
@@ -108,7 +108,7 @@ public class ProductsController : Controller
     }
 
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult> Update(int id, ProductDto updatedProductDto)
     {
         if (!ModelState.IsValid)
@@ -131,7 +131,7 @@ public class ProductsController : Controller
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> Delete(int id)
     {
         var product = await _productService.GetByIdAsync(id);
