@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Application.Products.DTOs;
+﻿using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
+using Ambev.DeveloperEvaluation.Application.Products.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
@@ -67,6 +68,7 @@ public class ProductsController : ControllerBase
         var product = await _productService.GetByIdAsync(id);
         if (product == null)
         {
+            _logger.LogWarning("Product {id} wasn't found", id);
             return NotFound();
         }
         return Ok(product);
@@ -126,7 +128,8 @@ public class ProductsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState);
+            _logger.LogWarning("ModelState is not valid when creating {productDto}", productDto);
+            return BadRequest();
         }
 
         try
@@ -148,6 +151,7 @@ public class ProductsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("ModelState is not valid when updating {updatedProductDto}", updatedProductDto);
             return BadRequest();
         }
 
@@ -156,6 +160,7 @@ public class ProductsController : ControllerBase
             var product = await _productService.GetByIdAsync(id);
             if (product == null)
             {
+                _logger.LogWarning("Product {id} wasn't found", id);
                 return NotFound();
             }
 
@@ -181,6 +186,7 @@ public class ProductsController : ControllerBase
             var product = await _productService.GetByIdAsync(id);
             if (product == null)
             {
+                _logger.LogWarning("Product {id} wasn't found", id);
                 return NotFound();
             }
 

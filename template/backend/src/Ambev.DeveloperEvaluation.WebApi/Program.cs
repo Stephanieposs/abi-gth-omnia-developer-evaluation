@@ -45,7 +45,6 @@ public class Program
             builder.Services.AddEndpointsApiExplorer();
 
             builder.AddBasicHealthChecks();
-            //builder.Services.AddSwaggerGen();
 
             builder.Services.AddSwaggerGen(c =>
             {
@@ -105,7 +104,9 @@ public class Program
 
             builder.RegisterDependencies();
 
-
+            builder.Host.UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
+                .WriteTo.Console()
+                .ReadFrom.Configuration(hostingContext.Configuration));
 
 
             builder.Services.AddMediatR(cfg =>

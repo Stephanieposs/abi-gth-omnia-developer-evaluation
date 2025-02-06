@@ -2,6 +2,7 @@
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,11 @@ namespace Ambev.DeveloperEvaluation.Application.Products;
 public class ProductService : IProductService
 {
     public readonly IProductRepository _repo;
-    public ProductService(IProductRepository repo)
+    public readonly ILogger<ProductService> _logger;
+    public ProductService(IProductRepository repo, ILogger<ProductService> logger)
     {
         _repo = repo;
+        _logger = logger;
     }
 
     public async Task AddAsync(Product product)
@@ -59,12 +62,14 @@ public class ProductService : IProductService
         return await _repo.GetProductById(id);
     }
 
-    public async Task UpdateAsync(Product product)
+    public async Task<Product> UpdateAsync(Product product)
     {
         var existingProduct = await _repo.GetProductById(product.Id);
         if (existingProduct == null)
         {
-            throw new KeyNotFoundException($"Product with ID {product.Id} not found.");
+            _logger.LogWarning($"Product with ID {product.Id} not found.");
+            //throw new KeyNotFoundException($"Product with ID {product.Id} not found.");
+            return null;
         }
 
         existingProduct.Title = product.Title;
@@ -74,9 +79,7 @@ public class ProductService : IProductService
         existingProduct.Image = product.Image;
         existingProduct.Rating.Rate = product.Rating.Rate;
 
-
-        //await _repo.UpdateRating(product.Id, product.Rating.Rate);
-        await _repo.UpdateProduct(existingProduct);
+        return await _repo.UpdateProduct(existingProduct);
     }
 
 

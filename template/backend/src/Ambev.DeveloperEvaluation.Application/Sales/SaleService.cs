@@ -4,6 +4,7 @@ using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,13 +20,15 @@ public class SaleService : ISaleService
     private readonly IMapper _mapper;
     private readonly ICartService _cartService;
     private readonly IProductService _productService;
+    private readonly ILogger<SaleService> _logger;
 
-    public SaleService(ISaleRepository repo, IMapper mapper, ICartService cartService, IProductService productService)
+    public SaleService(ISaleRepository repo, IMapper mapper, ICartService cartService, IProductService productService, ILogger<SaleService> logger)
     {
         _repo = repo;
         _mapper = mapper;
         _cartService = cartService;
         _productService = productService;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<Sale>> GetAllSales()
@@ -44,14 +47,17 @@ public class SaleService : ISaleService
 
         if (cart == null || cart.CartProductsList == null || !cart.CartProductsList.Any())
         {
-            throw new Exception("Cart is empty or invalid.");
+            //throw new Exception("Cart is empty or invalid.");
+            _logger.LogError("Cart is empty or invalid at sale {sale}", sale);
+            return null;
         }
 
         
         if (sale.Items == null)
         {
             sale.Items = new List<SaleItem>();
-            Console.WriteLine("console new List");
+            _logger.LogWarning("saleItems null, new saleItem list was created at {sale}", sale);
+            //Console.WriteLine("console new List");
         }
 
         var newSaleItems = new List<SaleItem>();
@@ -62,7 +68,9 @@ public class SaleService : ISaleService
             
             if (product == null)
             {
-                throw new Exception($"Product with ID {cartProduct.ProductId} not found.");
+                _logger.LogError("Product {product} not found", product);
+                //throw new Exception($"Product with ID {cartProduct.ProductId} not found.");
+                return null;
             }
 
             var saleItem = new SaleItem
@@ -101,7 +109,9 @@ public class SaleService : ISaleService
         var existingSale = await _repo.GetSaleById(sale.SaleNumber);
         if (existingSale == null)
         {
-            throw new KeyNotFoundException($"Sale with SaleNumber {sale.SaleNumber} not found.");
+            _logger.LogError("Sale with SaleNumber {sale.SaleNumber} not found", sale.SaleNumber);
+            return null;
+            //throw new KeyNotFoundException($"Sale with SaleNumber {sale.SaleNumber} not found.");
         }
 
         existingSale.BranchName = sale.BranchName;

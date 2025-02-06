@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts;
 using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
+using Ambev.DeveloperEvaluation.Application.Products.DTOs;
 using Ambev.DeveloperEvaluation.Application.Sales;
 using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
@@ -33,6 +34,7 @@ public class SalesController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("ModelState is not valid when creating {saleDto}", saleDto);
             return BadRequest();
         }
 
@@ -73,6 +75,7 @@ public class SalesController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("ModelState is not valid when creating {saleDto}", saleDto);
             return BadRequest();
         }
 
@@ -81,6 +84,7 @@ public class SalesController : ControllerBase
             var existingSale = await _service.GetSaleById(saleNumber);
             if (existingSale == null)
             {
+                _logger.LogWarning("Sale {saleNumber} wasn't found", saleNumber);
                 return NotFound();
             }
 
@@ -103,6 +107,7 @@ public class SalesController : ControllerBase
                 }
                 else
                 {
+                    _logger.LogWarning("SaleItem {saleItem} wasn't found", saleItem);
                     return NotFound("Item Not Found");
                 }
             }
@@ -128,6 +133,7 @@ public class SalesController : ControllerBase
             var sale = await _service.GetSaleById(saleNumber);
             if (sale == null)
             {
+                _logger.LogWarning("Sale {saleNumber} wasn't found", saleNumber);
                 return NotFound();
             }
 

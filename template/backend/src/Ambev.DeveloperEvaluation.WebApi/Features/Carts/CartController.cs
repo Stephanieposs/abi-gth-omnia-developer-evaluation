@@ -71,6 +71,7 @@ public class CartController : ControllerBase
 
         if (cart == null)
         {
+            _logger.LogWarning("Cart com ID {id} não encontrado.", id);
             return NotFound("Cart Not Found");
         }
         return Ok(cart);
@@ -82,6 +83,7 @@ public class CartController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("ModelState is not valid when creating {cartDto}", cartDto);
             return BadRequest();
         }
 
@@ -91,7 +93,8 @@ public class CartController : ControllerBase
 
             if (!cart.CartProductsList.Any())
             {
-                return BadRequest("No products specified for the cart.");
+                _logger.LogWarning("No products specified for the cart {cartDto}", cartDto);
+                return BadRequest();
             }
 
             var createdCart = await _cartService.AddCartAsync(cart);
@@ -110,6 +113,7 @@ public class CartController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("ModelState is not valid when updating to {updatedCart}", updatedCart);
             return BadRequest();
         }
 
@@ -118,6 +122,7 @@ public class CartController : ControllerBase
             var existingCart = await _cartService.GetCartByIdAsync(id);
             if (existingCart == null)
             {
+                _logger.LogWarning("Cart {id} wasn't found", id);
                 return NotFound();
             }
 
@@ -174,6 +179,7 @@ public class CartController : ControllerBase
             var cart = await _cartService.GetCartByIdAsync(id);
             if (cart == null)
             {
+                _logger.LogWarning("Cart {id} wasn't found", id);
                 return NotFound();
             }
 

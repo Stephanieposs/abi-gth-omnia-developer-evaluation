@@ -8,15 +8,19 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq.Dynamic.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
 
 public class CartRepository : ICartRepository
 {
     private readonly DefaultContext _yourContext;
-    public CartRepository(DefaultContext yourContext)
+    private readonly ILogger<CartRepository> _logger;
+
+    public CartRepository(DefaultContext yourContext, ILogger<CartRepository> logger)
     {
         _yourContext = yourContext;
+        _logger = logger;
     }
 
     public async Task<Cart> AddCartAsync(Cart cart)
@@ -57,7 +61,7 @@ public class CartRepository : ICartRepository
     {
         var query = _yourContext.Carts
         .Include(c => c.CartProductsList) // Ensure related data is included
-        .AsQueryable(); 
+        .AsQueryable();
 
 
         // Apply Filters
@@ -128,13 +132,10 @@ public class CartRepository : ICartRepository
         .ThenInclude(cp => cp.Product)
         .FirstOrDefaultAsync(c => c.Id == id);
 
-        if (!cart.CartProductsList.Any())
-        {
-            throw new Exception($"Cart with Id {id} has no products.");
-        }
         if (cart == null)
         {
-            throw new Exception($"No cart found with Id {id}");
+            _logger.LogWarning($"Cart with Id: {id} not found.");
+            return null;
         }
 
         return cart;
@@ -150,9 +151,12 @@ public class CartRepository : ICartRepository
 
     public async Task<Cart?> UpdateCartAsync(Cart cart)
     {
-
         var existingCart = await GetCartByIdAsync(cart.Id);
-        if (existingCart == null) return null;
+        if (existingCart == null)
+        {
+            _logger.LogWarning("Cart {cart.Id} wasn't found", cart.Id);
+            return null;
+        }
 
         // Update cart properties
         existingCart.UserId = cart.UserId;
@@ -163,8 +167,6 @@ public class CartRepository : ICartRepository
         await _yourContext.SaveChangesAsync();
         return existingCart;
     }
-
-
 
     public async Task<(IEnumerable<Cart> Items, int TotalCount)> GetCartsAsync(
         int page = 1,
@@ -252,8 +254,7 @@ public class CartRepository : ICartRepository
         var missingProducts = productIds.Except(existingProducts).ToList();
         if (missingProducts.Any())
         {
-            throw new InvalidOperationException(
-                $"Products with IDs {string.Join(", ", missingProducts)} do not exist.");
+            _logger.LogWarning($"Products with IDs {string.Join(", ", missingProducts)} do not exist.");
         }
     }
 }
