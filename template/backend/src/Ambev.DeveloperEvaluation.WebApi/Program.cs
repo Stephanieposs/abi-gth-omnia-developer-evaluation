@@ -26,6 +26,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -79,17 +80,6 @@ public class Program
             builder.Services.AddAutoMapper(typeof(CreateUserRequestProfile).Assembly);  //
             builder.Services.AddAutoMapper(typeof(UserConfiguration).Assembly);         //
 
-
-
-            builder.Services.AddScoped<IProductService, ProductService>();
-            builder.Services.AddScoped<IProductRepository, ProductRepository>();
-
-            builder.Services.AddScoped<ICartService, CartService>();
-            builder.Services.AddScoped<ICartRepository, CartRepository>();
-
-            builder.Services.AddScoped<ISaleService, SaleService>();
-            builder.Services.AddScoped<ISaleRepository, SaleRepository>();
-
             builder.Services.AddDbContext<DefaultContext>(
 
                 options =>
@@ -104,10 +94,14 @@ public class Program
 
             builder.RegisterDependencies();
 
+           
+
+           
+
             builder.Host.UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
                 .WriteTo.Console()
+                //.WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
                 .ReadFrom.Configuration(hostingContext.Configuration));
-
 
             builder.Services.AddMediatR(cfg =>
             {
@@ -130,7 +124,12 @@ public class Program
                 app.UseSwaggerUI();
             }
 
+
+            app.UseSerilogRequestLogging();
+
             app.UseHttpsRedirection();
+
+            app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();

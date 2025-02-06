@@ -17,15 +17,13 @@ namespace Ambev.DeveloperEvaluation.Application.Sales;
 public class SaleService : ISaleService
 {
     private readonly ISaleRepository _repo;
-    private readonly IMapper _mapper;
     private readonly ICartService _cartService;
     private readonly IProductService _productService;
     private readonly ILogger<SaleService> _logger;
 
-    public SaleService(ISaleRepository repo, IMapper mapper, ICartService cartService, IProductService productService, ILogger<SaleService> logger)
+    public SaleService(ISaleRepository repo,ICartService cartService, IProductService productService, ILogger<SaleService> logger)
     {
         _repo = repo;
-        _mapper = mapper;
         _cartService = cartService;
         _productService = productService;
         _logger = logger;
