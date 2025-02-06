@@ -1,6 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts;
 using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
-using Ambev.DeveloperEvaluation.Application.Products.DTOs;
 using Ambev.DeveloperEvaluation.Application.Sales;
 using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;

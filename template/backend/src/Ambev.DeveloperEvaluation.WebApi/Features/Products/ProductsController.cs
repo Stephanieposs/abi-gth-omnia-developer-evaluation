@@ -1,7 +1,8 @@
-﻿using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
-using Ambev.DeveloperEvaluation.Application.Products.DTOs;
-using Ambev.DeveloperEvaluation.Domain.Entities;
+﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Services;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetByIdProduct;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
@@ -13,7 +14,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
 
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize]
+// [Authorize]
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
@@ -28,20 +29,21 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin, Manager, Customer")]
+    //[Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<object>> GetAll(
-    [FromQuery] int _page = 1,
-    [FromQuery] int _size = 10,
-    [FromQuery] string _order = "id asc")
+        [FromQuery] int _page = 1,
+        [FromQuery] int _size = 10,
+        [FromQuery] string _order = "id asc")
     {
         try
         {
-            // Extract filters from query parameters
+            // Extract filters from request object (if needed)
             var filtersExtract = Request.Query
                 .Where(q => !q.Key.StartsWith("_")) // Exclude pagination and order keys
                 .ToDictionary(q => q.Key, q => q.Value.ToString());
 
             var (items, totalItems) = await _productService.GetFilteredAndOrderedProductsAsync(_page, _size, _order, filtersExtract); //filters ?? new Dictionary<string, string>()
+   
             var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
 
             // Return customized json
@@ -58,12 +60,12 @@ public class ProductsController : ControllerBase
             _logger.LogError(ex, "An error occurred while fetching products.");
             return StatusCode(500, "Internal Server Error");
         }
-        
     }
 
+
     [HttpGet("{id}")]
-    [Authorize(Roles = "Admin, Manager, Customer")]
-    public async Task<ActionResult<ProductDto>> GetById(int id)
+    //[Authorize(Roles = "Admin, Manager, Customer")]
+    public async Task<ActionResult<GetByIdProductResponse>> GetById(int id)
     {
         var product = await _productService.GetByIdAsync(id);
         if (product == null)
@@ -124,35 +126,45 @@ public class ProductsController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin, Manager")]
-    public async Task<ActionResult> Create(ProductDto productDto)
+    public async Task<ActionResult<CreateProductResponse>> Create(CreateProductRequest request)
     {
-        if (!ModelState.IsValid)
+        // Validate the request
+        var validator = new CreateProductRequestValidator();
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
         {
-            _logger.LogWarning("ModelState is not valid when creating {productDto}", productDto);
-            return BadRequest();
+            _logger.LogWarning("Validation Result is not valid when creating {request}", request);
+            return BadRequest(validationResult.Errors);
         }
 
-        try
-        {
-            var product = _mapper.Map<Product>(productDto);
-            await _productService.AddAsync(product);
-            return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while creating a product.");
-            return StatusCode(500, "Internal Server Error");
-        }
+        // Map the request to the domain entity
+        var product = _mapper.Map<Product>(request);
+
+        // Create the product
+        await _productService.AddAsync(product);
+
+        // Create the response
+        var response = new CreateProductResponse { 
+            Id = product.Id,
+            Title = product.Title,
+            Category = product.Category,
+            Description = product.Description,
+            Rating = product.Rating
+        };
+
+        return Ok(response);
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin, Manager")]
-    public async Task<ActionResult> Update(int id, ProductDto updatedProductDto)
+    //[Authorize(Roles = "Admin, Manager")]
+    public async Task<ActionResult<UpdateProductResponse>> Update(int id, UpdateProductRequest request)
     {
-        if (!ModelState.IsValid)
+        // Validate the request
+        var validator = new UpdateProductRequestValidator();
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
         {
-            _logger.LogWarning("ModelState is not valid when updating {updatedProductDto}", updatedProductDto);
-            return BadRequest();
+            return BadRequest(validationResult.Errors);
         }
 
         try
@@ -164,17 +176,26 @@ public class ProductsController : ControllerBase
                 return NotFound();
             }
 
-            var updatedProduct = _mapper.Map<Product>(updatedProductDto);
-            updatedProduct.Id = id;
-            await _productService.UpdateAsync(updatedProduct);
-            return Ok(updatedProduct);
+            _mapper.Map(request, product); // Update the existing entity with the request data
+
+            await _productService.UpdateAsync(product);
+
+            return Ok(new UpdateProductResponse
+            {
+                Title = product.Title,
+                Category = product.Category,
+                Description = product.Description,
+                Rating = product.Rating,
+                Price = product.Price,
+                Image = product.Image,
+            }
+                );
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while updating the product.");
             return StatusCode(500, "Internal Server Error");
         }
-        
     }
 
     [HttpDelete("{id}")]
@@ -191,7 +212,7 @@ public class ProductsController : ControllerBase
             }
 
             await _productService.DeleteAsync(id);
-            return NoContent();
+            return Ok("Deleted successfully");
         }
         catch (Exception ex)
         {

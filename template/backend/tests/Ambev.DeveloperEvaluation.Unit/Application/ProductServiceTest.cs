@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Products;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,15 @@ namespace Ambev.DeveloperEvaluation.Unit.Application;
 public class ProductServiceTest
 {
     private readonly Mock<IProductRepository> _mockRepository;
+    private readonly Mock<ILogger<ProductService>> _mockLogger;
     private readonly ProductService _service;
 
     public ProductServiceTest()
     {
         _mockRepository = new Mock<IProductRepository>();
-        //_service = new ProductService(_mockRepository.Object);
+        _mockLogger = new Mock<ILogger<ProductService>>(); 
+
+        _service = new ProductService(_mockRepository.Object, _mockLogger.Object);
     }
 
     [Fact]

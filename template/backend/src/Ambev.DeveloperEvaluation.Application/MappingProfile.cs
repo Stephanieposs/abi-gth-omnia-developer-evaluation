@@ -1,6 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
 using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
-using Ambev.DeveloperEvaluation.Application.Products.DTOs;
 using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Domain.Entities;
@@ -40,8 +39,8 @@ public class MappingProfile : Profile
         CreateMap<Sale, SaleDTO>().ReverseMap();
         CreateMap<SaleItem, SaleItemDTO>().ReverseMap();
 
-        CreateMap<Product, ProductDto>().ReverseMap();
-        CreateMap<Rating, RatingDto>().ReverseMap();
+        //CreateMap<Product, ProductDto>().ReverseMap();
+        //CreateMap<Rating, RatingDto>().ReverseMap();
 
         
     }
