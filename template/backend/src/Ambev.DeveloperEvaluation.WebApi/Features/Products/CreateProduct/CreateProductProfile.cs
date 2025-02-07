@@ -7,8 +7,8 @@ public class CreateProductProfile : Profile
 {
     public CreateProductProfile()
     {
-        CreateMap<CreateProductRequest, Product>(); // Map from request to domain entity
-        CreateMap<CreateProductResponse, Product>();
-        CreateMap<CreateProductRatingRequest, Rating>();
+        CreateMap<CreateProductRequest, Product>(); 
+        CreateMap<CreateProductResponse, Product>().ReverseMap();
+        CreateMap<CreateProductRatingRequest, Rating>().ReverseMap();
     }
 }

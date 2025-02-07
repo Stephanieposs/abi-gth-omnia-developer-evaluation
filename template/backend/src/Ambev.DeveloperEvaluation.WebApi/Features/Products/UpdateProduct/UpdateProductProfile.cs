@@ -10,5 +10,6 @@ public class UpdateProductProfile : Profile
         CreateMap<UpdateProductRequest, Product>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         CreateMap<UpdateProductRatingRequest, Rating>();
+        CreateMap<UpdateProductResponse, Product>().ReverseMap();
     }
 }

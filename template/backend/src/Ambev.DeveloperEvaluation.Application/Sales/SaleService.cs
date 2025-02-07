@@ -95,6 +95,7 @@ public class SaleService : ISaleService
         sale.Items.AddRange(newSaleItems);
 
         sale.TotalAmount = sale.Items.Sum(item => item.Total);
+        sale.CustomerId = cart.UserId;
 
         var createdSale = await _repo.CreateSale(sale);
         return sale;

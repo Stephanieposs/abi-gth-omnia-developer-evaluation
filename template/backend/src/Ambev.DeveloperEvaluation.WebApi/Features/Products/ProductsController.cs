@@ -29,7 +29,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    //[Authorize(Roles = "Admin, Manager, Customer")]
+    [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<object>> GetAll(
         [FromQuery] int _page = 1,
         [FromQuery] int _size = 10,
@@ -64,7 +64,7 @@ public class ProductsController : ControllerBase
 
 
     [HttpGet("{id}")]
-    //[Authorize(Roles = "Admin, Manager, Customer")]
+    [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<GetByIdProductResponse>> GetById(int id)
     {
         var product = await _productService.GetByIdAsync(id);
@@ -128,7 +128,7 @@ public class ProductsController : ControllerBase
     [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult<CreateProductResponse>> Create(CreateProductRequest request)
     {
-        // Validate the request
+        // Validating the request
         var validator = new CreateProductRequestValidator();
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -137,26 +137,17 @@ public class ProductsController : ControllerBase
             return BadRequest(validationResult.Errors);
         }
 
-        // Map the request to the domain entity
         var product = _mapper.Map<Product>(request);
 
-        // Create the product
         await _productService.AddAsync(product);
 
-        // Create the response
-        var response = new CreateProductResponse { 
-            Id = product.Id,
-            Title = product.Title,
-            Category = product.Category,
-            Description = product.Description,
-            Rating = product.Rating
-        };
+        var responseMap = _mapper.Map<CreateProductResponse>(product);
 
-        return Ok(response);
+        return Ok(responseMap);
     }
 
     [HttpPut("{id}")]
-    //[Authorize(Roles = "Admin, Manager")]
+    [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult<UpdateProductResponse>> Update(int id, UpdateProductRequest request)
     {
         // Validate the request
@@ -180,16 +171,9 @@ public class ProductsController : ControllerBase
 
             await _productService.UpdateAsync(product);
 
-            return Ok(new UpdateProductResponse
-            {
-                Title = product.Title,
-                Category = product.Category,
-                Description = product.Description,
-                Rating = product.Rating,
-                Price = product.Price,
-                Image = product.Image,
-            }
-                );
+            var response = _mapper.Map<UpdateProductResponse>(product);
+
+            return Ok(response);
         }
         catch (Exception ex)
         {

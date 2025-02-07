@@ -3,6 +3,8 @@ using Ambev.DeveloperEvaluation.Application.Products;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Services;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
@@ -62,9 +64,9 @@ public class CartController : ControllerBase
 
     }
 
-    [Authorize(Roles = "Admin, Manager, Customer")]
+
     [HttpGet("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<CartDTO>> GetById(int id)
     {
         var cart = await _cartService.GetCartByIdAsync(id);
@@ -79,7 +81,7 @@ public class CartController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin, Manager, Customer")]
-    public async Task<ActionResult> Create(CartDTO cartDto)
+    public async Task<ActionResult> Create(CreateCartRequest cartDto)
     {
         if (!ModelState.IsValid)
         {
@@ -93,11 +95,14 @@ public class CartController : ControllerBase
 
             if (!cart.CartProductsList.Any())
             {
-                _logger.LogWarning("No products specified for the cart {cartDto}", cartDto);
-                return BadRequest();
+                _logger.LogWarning("No products specified for the cart {cart}", cart);
+                return BadRequest(cart);
             }
 
+            cart.UserId = cartDto.UserId;
+
             var createdCart = await _cartService.AddCartAsync(cart);
+
             return Ok(createdCart);
         }
         catch(Exception ex) 
@@ -109,7 +114,7 @@ public class CartController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin, Manager, Customer")]
-    public async Task<ActionResult> Update(int id, CartDTO updatedCart)
+    public async Task<ActionResult> Update(int id, UpdateCartRequest updatedCart)
     {
         if (!ModelState.IsValid)
         {
@@ -128,7 +133,7 @@ public class CartController : ControllerBase
 
             existingCart.Date = updatedCart.Date;
             existingCart.UserId = updatedCart.UserId;
-
+             
             // Update products in the cart
             var updatedProductIds = updatedCart.Products.Select(p => p.ProductId).ToHashSet();
 

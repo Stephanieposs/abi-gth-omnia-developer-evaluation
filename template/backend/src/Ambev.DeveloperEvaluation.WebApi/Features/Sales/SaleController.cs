@@ -4,6 +4,10 @@ using Ambev.DeveloperEvaluation.Application.Sales;
 using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Services;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetAllSales;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSaleById;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSale;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
@@ -29,7 +33,7 @@ public class SalesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin, Manager")]
-    public async Task<ActionResult> CreateSale(SaleDTO saleDto)
+    public async Task<ActionResult> CreateSale(CreateSaleRequest saleDto)
     {
         if (!ModelState.IsValid)
         {
@@ -39,9 +43,13 @@ public class SalesController : ControllerBase
 
         try
         {
+            
             var sale = _mapper.Map<Sale>(saleDto);
             var createdSale = await _service.CreateSale(sale);
-            return Ok(createdSale);
+
+            var responseMap = _mapper.Map<CreateSaleResponse>(createdSale);
+
+            return Ok(responseMap);
         }
         catch (Exception ex)
         {
@@ -55,7 +63,10 @@ public class SalesController : ControllerBase
     public async Task<ActionResult<IEnumerable<SaleDTO>>> GetAllSales()
     {
         var sales = await _service.GetAllSales();
-        return Ok(sales);
+
+        var response = _mapper.Map<List<GetAllSalesResponse>>(sales);
+
+        return Ok(response);
     }
 
     [HttpGet("{saleNumber}")]
@@ -64,13 +75,15 @@ public class SalesController : ControllerBase
     {
         var sale = await _service.GetSaleById(saleNumber);
         if (sale == null) return NotFound();
-        var saleDto = _mapper.Map<SaleDTO>(sale);
-        return Ok(sale);
+
+        var responseMap = _mapper.Map<GetSaleByIdResponse>(sale);
+
+        return Ok(responseMap);
     }
 
     [HttpPut("{saleNumber}")]
     [Authorize(Roles = "Admin, Manager")]
-    public async Task<ActionResult> UpdateSale(int saleNumber, SaleDTO saleDto)
+    public async Task<ActionResult> UpdateSale(int saleNumber, UpdateSaleRequest saleDto)
     {
         if (!ModelState.IsValid)
         {
@@ -89,7 +102,7 @@ public class SalesController : ControllerBase
 
             existingSale.BranchName = saleDto.BranchName;
             existingSale.BranchId = saleDto.BranchId;
-            existingSale.CustomerId = saleDto.CustomerId;
+            //existingSale.CustomerId = saleDto.CustomerId;
             existingSale.CustomerName = saleDto.CustomerName;
             existingSale.Date = DateTime.UtcNow;
 
@@ -111,8 +124,10 @@ public class SalesController : ControllerBase
                 }
             }
 
+            var response = _mapper.Map<UpdateSaleResponse>(existingSale);
+
             await _service.UpdateSale(existingSale);
-            return Ok(existingSale);
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -137,7 +152,7 @@ public class SalesController : ControllerBase
             }
 
             await _service.DeleteSale(saleNumber);
-            return Ok(sale);
+            return Ok($"Deleted {saleNumber}");
         }
         catch (Exception ex)
         {
