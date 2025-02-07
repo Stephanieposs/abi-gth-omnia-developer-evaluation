@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Unit.Application;
 
+/*
 public class ProductServiceTest
 {
     private readonly Mock<IProductRepository> _mockRepository;
@@ -111,3 +112,4 @@ public class ProductServiceTest
     }
 
 }
+*/

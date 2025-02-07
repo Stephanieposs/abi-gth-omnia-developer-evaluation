@@ -16,6 +16,6 @@ public class ApplicationModuleInitializer : IModuleInitializer
 
         builder.Services.AddScoped<ICartService, CartService>();
         builder.Services.AddScoped<ISaleService, SaleService>();
-        builder.Services.AddScoped<IProductService, ProductService>();
+        //builder.Services.AddScoped<IProductService, ProductService>();
     }
 }

@@ -1,4 +1,11 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+﻿using Ambev.DeveloperEvaluation.Application.Products.CreateProduct;
+using Ambev.DeveloperEvaluation.Application.Products.DeleteProduct;
+using Ambev.DeveloperEvaluation.Application.Products.GetAllCategories;
+using Ambev.DeveloperEvaluation.Application.Products.GetAllProducts;
+using Ambev.DeveloperEvaluation.Application.Products.GetByCategory;
+using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
+using Ambev.DeveloperEvaluation.Application.Products.UpdateProduct;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetByIdProduct;
@@ -6,6 +13,7 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -20,17 +28,19 @@ public class ProductsController : ControllerBase
     private readonly IProductService _productService;
     private readonly IMapper _mapper;
     private readonly ILogger<ProductsController> _logger;
+    private readonly IMediator _mediator;
 
-    public ProductsController(IProductService productService, IMapper mapper, ILogger<ProductsController> logger)
+    public ProductsController(IProductService productService, IMapper mapper, ILogger<ProductsController> logger, IMediator mediator)
     {
         _productService = productService;
         _mapper = mapper;
         _logger = logger;
+        _mediator = mediator;
     }
 
     [HttpGet]
     [Authorize(Roles = "Admin, Manager, Customer")]
-    public async Task<ActionResult<object>> GetAll(
+    public async Task<ActionResult<GetAllProductsResponse>> GetAll(
         [FromQuery] int _page = 1,
         [FromQuery] int _size = 10,
         [FromQuery] string _order = "id asc")
@@ -42,18 +52,11 @@ public class ProductsController : ControllerBase
                 .Where(q => !q.Key.StartsWith("_")) // Exclude pagination and order keys
                 .ToDictionary(q => q.Key, q => q.Value.ToString());
 
-            var (items, totalItems) = await _productService.GetFilteredAndOrderedProductsAsync(_page, _size, _order, filtersExtract); //filters ?? new Dictionary<string, string>()
-   
-            var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
+            // Send command via MediatR
+            var query = new GetAllProductsQuery(_page, _size, _order, filtersExtract);
+            var result = await _mediator.Send(query);
 
-            // Return customized json
-            return Ok(new
-            {
-                data = items,
-                totalItems,
-                currentPage = _page,
-                totalPages
-            });
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -67,13 +70,17 @@ public class ProductsController : ControllerBase
     [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<GetByIdProductResponse>> GetById(int id)
     {
-        var product = await _productService.GetByIdAsync(id);
-        if (product == null)
+        // Send command via MediatR
+        var command = new GetProductCommand(id);
+        var result = await _mediator.Send(command);
+
+        if (result == null)
         {
-            _logger.LogWarning("Product {id} wasn't found", id);
-            return NotFound();
+            _logger.LogWarning("Product {id} not found", id);
+            return NotFound("Product not found");
         }
-        return Ok(product);
+
+        return Ok(result);
     }
 
     // return all categories 
@@ -83,125 +90,125 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            var categories = await _productService.GetAllProductCategoriesAsync();
-            return Ok(categories);
+            // Send command via MediatR
+            var query = new GetAllCategoriesQuery();
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while fetching categories.");
             return StatusCode(500, "Internal Server Error");
         }
-       
+
     }
 
     // return products with a determined category
     [HttpGet("category/{category}")]
     [Authorize(Roles = "Admin, Manager, Customer")]
     public async Task<ActionResult<object>> GetByCategory(
-    string category,
-    [FromQuery] int _page = 1,
-    [FromQuery] int _size = 10,
-    [FromQuery] string _order = "title asc")
+    string category)
     {
-        try
-        {
-            var (products, totalItems) = await _productService.GetPagedProductsByCategoryAsync(category, _page, _size, _order);
-            var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
+        // Send command via MediatR
+        var command = new GetByCategoryCommand(category);
+        var result = await _mediator.Send(command);
 
-            return Ok(new
-            {
-                data = products,
-                totalItems,
-                currentPage = _page,
-                totalPages
-            });
-        }
-        catch (Exception ex)
+        if (result == null)
         {
-            _logger.LogError(ex, "An error occurred while fetching products by category.");
-            return StatusCode(500, "Internal Server Error");
+            _logger.LogWarning("Category {category} not found", category);
+            return NotFound("Category not found");
         }
 
+        return Ok(result);
     }
 
     [HttpPost]
     [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult<CreateProductResponse>> Create(CreateProductRequest request)
     {
-        // Validating the request
+        // Validating
         var validator = new CreateProductRequestValidator();
         var validationResult = await validator.ValidateAsync(request);
+
         if (!validationResult.IsValid)
         {
-            _logger.LogWarning("Validation Result is not valid when creating {request}", request);
+            _logger.LogWarning("Validation failed when creating product: {request}", request);
             return BadRequest(validationResult.Errors);
         }
 
-        var product = _mapper.Map<Product>(request);
+        // Send command via MediatR
+        var command = _mapper.Map<CreateProductCommand>(request);
+        var createdProduct = await _mediator.Send(command);
 
-        await _productService.AddAsync(product);
+        if (createdProduct == null)
+        {
+            _logger.LogError("MediatR returned null for CreateProductCommand");
+            return StatusCode(500, "Failed to create product.");
+        }
 
-        var responseMap = _mapper.Map<CreateProductResponse>(product);
+        // Map response model
+        var response = _mapper.Map<CreateProductResponse>(createdProduct);
 
-        return Ok(responseMap);
+        if (response == null)
+        {
+            _logger.LogError("AutoMapper failed to map CreateProductResponse.");
+            return StatusCode(500, "Failed to create product response.");
+        }
+
+        return Ok(response);
+
     }
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin, Manager")]
     public async Task<ActionResult<UpdateProductResponse>> Update(int id, UpdateProductRequest request)
     {
-        // Validate the request
+        // Validating
         var validator = new UpdateProductRequestValidator();
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
+            _logger.LogWarning("Validation failed when updating product: {request}", request);
             return BadRequest(validationResult.Errors);
         }
 
-        try
+        // Send command via MediatR
+        var command = _mapper.Map<UpdateProductCommand>(request);
+        var updatedProduct = await _mediator.Send(command);
+
+        if (updatedProduct == null)
         {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
-            {
-                _logger.LogWarning("Product {id} wasn't found", id);
-                return NotFound();
-            }
-
-            _mapper.Map(request, product); // Update the existing entity with the request data
-
-            await _productService.UpdateAsync(product);
-
-            var response = _mapper.Map<UpdateProductResponse>(product);
-
-            return Ok(response);
+            _logger.LogError("MediatR returned null for UpdatedProductCommand");
+            return StatusCode(500, "Failed to update product.");
         }
-        catch (Exception ex)
+
+        // Map response model
+        var response = _mapper.Map<UpdateProductResponse>(updatedProduct);
+
+        if (response == null)
         {
-            _logger.LogError(ex, "An error occurred while updating the product.");
-            return StatusCode(500, "Internal Server Error");
+            _logger.LogError("AutoMapper failed to map UpdatedProductResponse.");
+            return StatusCode(500, "Failed to create product response.");
         }
+
+        return Ok(response);
     }
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult> Delete(int id)
     {
-        try
-        {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
-            {
-                _logger.LogWarning("Product {id} wasn't found", id);
-                return NotFound();
-            }
+        // Send command via MediatR
+        var command = new DeleteProductCommand(id);
+        var result = await _mediator.Send(command);
 
-            await _productService.DeleteAsync(id);
-            return Ok("Deleted successfully");
-        }
-        catch (Exception ex)
+        if (!result)
         {
-            _logger.LogError(ex, "An error occurred while deleting the product.");
-            return StatusCode(500, "Internal Server Error");
+            _logger.LogWarning("Product {id} not found", id);
+            return NotFound("Product not found");
         }
+
+        return Ok("Product deleted successfully");
     }
 }
