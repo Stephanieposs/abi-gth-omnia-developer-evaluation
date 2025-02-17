@@ -1,9 +1,11 @@
-﻿using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
+﻿using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
+using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,15 +20,15 @@ public class SaleService : ISaleService
 {
     private readonly ISaleRepository _repo;
     private readonly ICartService _cartService;
-    private readonly IProductService _productService;
     private readonly ILogger<SaleService> _logger;
+    private readonly IMediator _mediator;
 
-    public SaleService(ISaleRepository repo,ICartService cartService, IProductService productService, ILogger<SaleService> logger)
+    public SaleService(ISaleRepository repo, ICartService cartService, ILogger<SaleService> logger, IMediator mediator) 
     {
         _repo = repo;
         _cartService = cartService;
-        _productService = productService;
         _logger = logger;
+        _mediator = mediator;
     }
 
     public async Task<IEnumerable<Sale>> GetAllSales()
@@ -62,8 +64,12 @@ public class SaleService : ISaleService
 
         foreach (var cartProduct in cart.CartProductsList)  
         {
-            var product = await _productService.GetByIdAsync(cartProduct.ProductId);
-            
+
+            //var product = await _productService.GetByIdAsync(cartProduct.ProductId);
+
+            var command = new GetProductCommand(cartProduct.ProductId);
+            var product = await _mediator.Send(command);
+
             if (product == null)
             {
                 _logger.LogError("Product {product} not found", product);

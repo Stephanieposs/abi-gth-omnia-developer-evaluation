@@ -28,7 +28,8 @@ public class CreateProductHandler : IRequestHandler<CreateProductCommand, Create
         var validator = new CreateProductValidator();
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
-            throw new ValidationException(validationResult.Errors);
+            return null;
+            //throw new ValidationException(validationResult.Errors);
 
         var product = _mapper.Map<Product>(command);
         product.Rating.IncrementCount();

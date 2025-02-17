@@ -42,6 +42,8 @@ public class UpdateProductHandler : IRequestHandler<UpdateProductCommand, Produc
         product.Description = command.Description;
         product.Price = command.Price;
         product.Category = command.Category;
+        product.Image = command.Image;
+        product.Rating = command.Rating;
 
         await _repo.UpdateProduct(product);
 

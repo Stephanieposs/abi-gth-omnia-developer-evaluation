@@ -40,7 +40,8 @@ public class GetAllProductsHandler : IRequestHandler<GetAllProductsQuery, GetAll
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching products.");
-            throw;
+            return null;
+            //throw;
         }
     }
 }

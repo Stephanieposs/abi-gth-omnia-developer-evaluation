@@ -11,13 +11,12 @@ namespace Ambev.DeveloperEvaluation.Domain.Services;
 
 public interface ICartService
 {
-    Task<IEnumerable<Cart>> GetCartsAsync();
-    //Task<IEnumerable<CartDTO>> GetCartsAsync();
+    //Task<IEnumerable<Cart>> GetCartsAsync();
     Task<Cart> GetCartByIdAsync(int id);
     Task<Cart> AddCartAsync(Cart cart);
     Task<Cart> UpdateCartAsync(Cart cart);
     Task<Cart> DeleteCartAsync(int id);
-    Task<(IEnumerable<Cart> Carts, int TotalItems)> GetPagedCartsAsync(int page, int size, string order);
+    //Task<(IEnumerable<Cart> Carts, int TotalItems)> GetPagedCartsAsync(int page, int size, string order);
     Task<(IEnumerable<Cart> Items, int TotalItems)> GetFilteredAndOrderedCartsAsync(
     int page, int size, string order, Dictionary<string, string> filters);
 }

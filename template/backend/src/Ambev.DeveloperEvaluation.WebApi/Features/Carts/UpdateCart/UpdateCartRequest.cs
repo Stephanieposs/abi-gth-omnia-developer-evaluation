@@ -4,7 +4,8 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
 
 public class UpdateCartRequest
 {
+
     public int UserId { get; set; }
     public DateTime Date { get; set; }
-    public List<CreateCartProductRequest> Products { get; set; } = new List<CreateCartProductRequest>();
+    public List<UpdateCartProductRequest> Products { get; set; } = new List<UpdateCartProductRequest>();
 }

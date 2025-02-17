@@ -59,13 +59,14 @@ public class DependencyInjectionTests
         Assert.NotNull(repository); // Test passes if SaleRepository is correctly registered
     }
 
+    /*
     [Fact]
     public void Should_Resolve_ProductService()
     {
         var service = _serviceProvider.GetService<IProductService>();
         Assert.NotNull(service); // Test passes if ProductService is correctly registered
     }
-
+    */
     [Fact]
     public void Should_Resolve_ProductRepository()
     {

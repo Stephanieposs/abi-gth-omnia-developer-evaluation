@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+﻿using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 using AutoMapper;
 
@@ -27,5 +28,6 @@ public class UpdateCartProfile : Profile
                 ProductId = p.ProductId,
                 Quantity = p.Quantity
             })));
+        CreateMap<UpdateCartResult, Cart>().ReverseMap();
     }
 }

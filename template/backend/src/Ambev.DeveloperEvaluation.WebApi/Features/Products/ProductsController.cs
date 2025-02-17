@@ -25,14 +25,14 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
 // [Authorize]
 public class ProductsController : ControllerBase
 {
-    private readonly IProductService _productService;
+    //private readonly IProductService _productService;
     private readonly IMapper _mapper;
     private readonly ILogger<ProductsController> _logger;
     private readonly IMediator _mediator;
 
-    public ProductsController(IProductService productService, IMapper mapper, ILogger<ProductsController> logger, IMediator mediator)
+    public ProductsController( IMapper mapper, ILogger<ProductsController> logger, IMediator mediator) //IProductService productService
     {
-        _productService = productService;
+        //_productService = productService;
         _mapper = mapper;
         _logger = logger;
         _mediator = mediator;
@@ -173,8 +173,11 @@ public class ProductsController : ControllerBase
             return BadRequest(validationResult.Errors);
         }
 
+        
         // Send command via MediatR
         var command = _mapper.Map<UpdateProductCommand>(request);
+        command.Id = id;
+
         var updatedProduct = await _mediator.Send(command);
 
         if (updatedProduct == null)
@@ -189,7 +192,7 @@ public class ProductsController : ControllerBase
         if (response == null)
         {
             _logger.LogError("AutoMapper failed to map UpdatedProductResponse.");
-            return StatusCode(500, "Failed to create product response.");
+            return StatusCode(500, "Failed to update product response.");
         }
 
         return Ok(response);

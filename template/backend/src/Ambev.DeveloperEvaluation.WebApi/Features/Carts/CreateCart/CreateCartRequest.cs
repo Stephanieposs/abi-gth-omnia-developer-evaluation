@@ -6,5 +6,5 @@ public class CreateCartRequest
 {
     public int UserId { get; set; }
     public DateTime Date { get; set; }
-    public List<CreateCartProductRequest> Products { get; set; } = new List<CreateCartProductRequest>();
+    public List<CreateCartProductRequest> CartProductsList { get; set; } = new List<CreateCartProductRequest>();
 }
