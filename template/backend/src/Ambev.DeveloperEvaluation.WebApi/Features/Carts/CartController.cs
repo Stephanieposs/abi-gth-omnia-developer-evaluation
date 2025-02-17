@@ -1,6 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
-using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
 using Ambev.DeveloperEvaluation.Application.Carts.GetAllCarts;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
@@ -27,14 +26,12 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts;
 [Route("api/[controller]")]
 public class CartController : ControllerBase
 {
-    //public readonly ICartService _cartService;
     public readonly IMapper _mapper;
     public readonly ILogger<CartController> _logger;
     private readonly IMediator _mediator;
 
-    public CartController(ICartService cartService, IMapper mapper, ILogger<CartController> logger, IMediator mediator)
+    public CartController(IMapper mapper, ILogger<CartController> logger, IMediator mediator)
     {
-        //_cartService = cartService;
         _mapper = mapper;
         _logger = logger;
         _mediator = mediator;

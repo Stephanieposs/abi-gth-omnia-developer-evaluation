@@ -1,5 +1,4 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
-using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using AutoMapper;
 

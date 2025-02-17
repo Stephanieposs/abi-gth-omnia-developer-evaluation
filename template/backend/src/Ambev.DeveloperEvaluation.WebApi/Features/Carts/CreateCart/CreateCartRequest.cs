@@ -1,5 +1,4 @@
-﻿using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
-
+﻿
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 
 public class CreateCartRequest

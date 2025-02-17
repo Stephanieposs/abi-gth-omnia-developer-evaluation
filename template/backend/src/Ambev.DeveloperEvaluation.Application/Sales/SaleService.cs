@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
+﻿using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
+using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
@@ -19,14 +20,12 @@ namespace Ambev.DeveloperEvaluation.Application.Sales;
 public class SaleService : ISaleService
 {
     private readonly ISaleRepository _repo;
-    private readonly ICartService _cartService;
     private readonly ILogger<SaleService> _logger;
     private readonly IMediator _mediator;
 
-    public SaleService(ISaleRepository repo, ICartService cartService, ILogger<SaleService> logger, IMediator mediator) 
+    public SaleService(ISaleRepository repo, ILogger<SaleService> logger, IMediator mediator) 
     {
         _repo = repo;
-        _cartService = cartService;
         _logger = logger;
         _mediator = mediator;
     }
@@ -43,9 +42,12 @@ public class SaleService : ISaleService
 
     public async Task<Sale> CreateSale(Sale sale)
     {
-        var cart = await _cartService.GetCartByIdAsync(sale.CartId);
+        //var cart = await _cartService.GetCartByIdAsync(sale.CartId);
+        var query = new GetCartQuery(sale.CartId);
+        var cart = await _mediator.Send(query);
 
-        if (cart == null || cart.CartProductsList == null || !cart.CartProductsList.Any())
+
+        if (cart == null || cart.Products == null || !cart.Products.Any())
         {
             //throw new Exception("Cart is empty or invalid.");
             _logger.LogError("Cart is empty or invalid at sale {sale}", sale);
@@ -62,7 +64,7 @@ public class SaleService : ISaleService
 
         var newSaleItems = new List<SaleItem>();
 
-        foreach (var cartProduct in cart.CartProductsList)  
+        foreach (var cartProduct in cart.Products)  
         {
 
             //var product = await _productService.GetByIdAsync(cartProduct.ProductId);
@@ -80,10 +82,10 @@ public class SaleService : ISaleService
             var saleItem = new SaleItem
             {
                 ProductId = cartProduct.ProductId,
-                ProductItem = cartProduct.Product,
+                //ProductItem = cartProduct.Product,
                 ProductName = product.Title,
-                CartItem = cart,
-                CartItemId = cart.Id,
+                //CartItem = cart,                          -------------------------------------------------------------------------------------------
+                //CartItemId = cart.Id,
                 UnitPrice = product.Price,
                 Quantity = cartProduct.Quantity,
                 IsCancelled = false
