@@ -1,6 +1,5 @@
 using Ambev.DeveloperEvaluation.Application;
 using Ambev.DeveloperEvaluation.Application.Carts;
-using Ambev.DeveloperEvaluation.Application.Carts.DTOs;
 using Ambev.DeveloperEvaluation.Application.Products;
 using Ambev.DeveloperEvaluation.Application.Sales;
 using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
@@ -25,7 +24,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using System.Text;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -45,7 +43,6 @@ public class Program
             builder.Services.AddEndpointsApiExplorer();
 
             builder.AddBasicHealthChecks();
-            //builder.Services.AddSwaggerGen();
 
             builder.Services.AddSwaggerGen(c =>
             {
@@ -72,25 +69,18 @@ public class Program
                     }
                 });
             });
-            
 
+            builder.Services.AddAutoMapper(cfg => {
+                cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies());
+            });
+
+            /*
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);
             builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
             builder.Services.AddAutoMapper(typeof(CreateUserRequestProfile).Assembly);  //
             builder.Services.AddAutoMapper(typeof(UserConfiguration).Assembly);         //
-
-
-
-            builder.Services.AddScoped<IProductService, ProductService>();
-            builder.Services.AddScoped<IProductRepository, ProductRepository>();
-
-            builder.Services.AddScoped<ICartService, CartService>();
-            builder.Services.AddScoped<ICartRepository, CartRepository>();
-
-            builder.Services.AddScoped<ISaleService, SaleService>();
-            builder.Services.AddScoped<ISaleRepository, SaleRepository>();
-
+            */
             builder.Services.AddDbContext<DefaultContext>(
 
                 options =>
@@ -108,6 +98,14 @@ public class Program
 
 
 
+
+            builder.Host.UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                //.WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+                .ReadFrom.Configuration(hostingContext.Configuration));
+
+            /*
             builder.Services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssemblies(
@@ -115,6 +113,11 @@ public class Program
                     typeof(Program).Assembly
                 );
             });
+            */
+            builder.Services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssembly(typeof(ApplicationLayer).Assembly)
+            );
+
 
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
@@ -129,7 +132,12 @@ public class Program
                 app.UseSwaggerUI();
             }
 
+
+            app.UseSerilogRequestLogging();
+
             app.UseHttpsRedirection();
+
+            app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -143,6 +151,17 @@ public class Program
         catch (Exception ex)
         {
             Log.Fatal(ex, "Application terminated unexpectedly");
+
+            if (ex is AggregateException aggEx)
+            {
+                foreach (var innerEx in aggEx.InnerExceptions)
+                {
+                    Log.Fatal(innerEx, "Inner Exception:");
+                }
+            }
+
+            throw; // Allow the error to be visible in the console
+
         }
         finally
         {
