@@ -6,7 +6,6 @@ using Ambev.DeveloperEvaluation.Application.Products.GetByCategory;
 using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 using Ambev.DeveloperEvaluation.Application.Products.UpdateProduct;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetByIdProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;

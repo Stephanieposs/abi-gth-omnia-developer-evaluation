@@ -1,8 +1,16 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts;
+using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
+using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
+using Ambev.DeveloperEvaluation.Application.Carts.GetAllCarts;
+using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
+using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 using Ambev.DeveloperEvaluation.Application.Sales;
-using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
+using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.Application.Sales.DeleteSale;
+using Ambev.DeveloperEvaluation.Application.Sales.GetAllSales;
+using Ambev.DeveloperEvaluation.Application.Sales.GetSale;
+using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetAllSales;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSaleById;
@@ -10,6 +18,7 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSale;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,15 +28,15 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales;
 [Route("api/[controller]")]
 public class SalesController : ControllerBase
 {
-    public readonly ISaleService _service;
     public readonly IMapper _mapper;
     public readonly ILogger<SalesController> _logger;
+    private readonly IMediator _mediator;
 
-    public SalesController(ISaleService service, IMapper mapper, ILogger<SalesController> logger)
+    public SalesController(IMapper mapper, ILogger<SalesController> logger, IMediator mediator)
     {
-        _service = service;
         _mapper = mapper;
         _logger = logger;
+        _mediator = mediator;
     }
 
     [HttpPost]
@@ -44,7 +53,9 @@ public class SalesController : ControllerBase
         {
             
             var sale = _mapper.Map<Sale>(saleDto);
-            var createdSale = await _service.CreateSale(sale);
+            //var createdSale = await _service.CreateSale(sale);
+            var command = _mapper.Map<CreateSaleCommand>(sale);
+            var createdSale = await _mediator.Send(command);
 
             var responseMap = _mapper.Map<CreateSaleResponse>(createdSale);
 
@@ -59,20 +70,25 @@ public class SalesController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "Admin, Manager")]
-    public async Task<ActionResult<IEnumerable<SaleDTO>>> GetAllSales()
+    public async Task<ActionResult<List<GetAllSalesResponse>>> GetAllSales()
     {
-        var sales = await _service.GetAllSales();
+        //var sales = await _service.GetAllSales();
+        var query = new GetAllSalesQuery();
+        var result = await _mediator.Send(query);
 
-        var response = _mapper.Map<List<GetAllSalesResponse>>(sales);
+        var response = _mapper.Map<List<GetAllSalesResponse>>(result);
 
         return Ok(response);
     }
 
     [HttpGet("{saleNumber}")]
     [Authorize(Roles = "Admin, Manager")]
-    public async Task<ActionResult<SaleDTO>> GetSaleById(int saleNumber)
+    public async Task<ActionResult<GetSaleByIdResponse>> GetSaleById(int saleNumber)
     {
-        var sale = await _service.GetSaleById(saleNumber);
+        //var sale = await _service.GetSaleById(saleNumber);
+        var query = new GetSaleQuery(saleNumber);
+        var sale = await _mediator.Send(query);
+
         if (sale == null) return NotFound();
 
         var responseMap = _mapper.Map<GetSaleByIdResponse>(sale);
@@ -92,40 +108,13 @@ public class SalesController : ControllerBase
 
         try
         {
-            var existingSale = await _service.GetSaleById(saleNumber);
-            if (existingSale == null)
-            {
-                _logger.LogWarning("Sale {saleNumber} wasn't found", saleNumber);
-                return NotFound();
-            }
+            
+            var command = _mapper.Map<UpdateSaleCommand>(saleDto);
+            command.SaleNumber = saleNumber;
+            var createdSale = await _mediator.Send(command);
 
-            existingSale.BranchName = saleDto.BranchName;
-            existingSale.BranchId = saleDto.BranchId;
-            //existingSale.CustomerId = saleDto.CustomerId;
-            existingSale.CustomerName = saleDto.CustomerName;
-            existingSale.Date = DateTime.UtcNow;
+            var response = _mapper.Map<UpdateSaleResponse>(createdSale);
 
-            var sale = _mapper.Map<Sale>(saleDto);
-
-            foreach (var saleItem in sale.Items)
-            {
-                var saleIt = existingSale.Items
-                    .FirstOrDefault(p => p.Id == saleItem.Id);
-                if (saleIt != null)
-                {
-                    saleIt.UnitPrice = saleItem.UnitPrice;
-                    saleIt.Quantity = saleItem.Quantity;
-                }
-                else
-                {
-                    _logger.LogWarning("SaleItem {saleItem} wasn't found", saleItem);
-                    return NotFound("Item Not Found");
-                }
-            }
-
-            var response = _mapper.Map<UpdateSaleResponse>(existingSale);
-
-            await _service.UpdateSale(existingSale);
             return Ok(response);
         }
         catch (Exception ex)
@@ -143,14 +132,18 @@ public class SalesController : ControllerBase
     {
         try
         {
-            var sale = await _service.GetSaleById(saleNumber);
+            var query = new GetSaleQuery(saleNumber);
+            var sale = await _mediator.Send(query);
+
             if (sale == null)
             {
                 _logger.LogWarning("Sale {saleNumber} wasn't found", saleNumber);
                 return NotFound();
             }
 
-            await _service.DeleteSale(saleNumber);
+            var command = new DeleteSaleCommand(saleNumber);
+            await _mediator.Send(command);
+
             return Ok($"Deleted {saleNumber}");
         }
         catch (Exception ex)

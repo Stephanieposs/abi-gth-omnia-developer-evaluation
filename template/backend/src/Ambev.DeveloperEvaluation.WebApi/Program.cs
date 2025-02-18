@@ -2,14 +2,12 @@ using Ambev.DeveloperEvaluation.Application;
 using Ambev.DeveloperEvaluation.Application.Carts;
 using Ambev.DeveloperEvaluation.Application.Products;
 using Ambev.DeveloperEvaluation.Application.Sales;
-using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Common.HealthChecks;
 using Ambev.DeveloperEvaluation.Common.Logging;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
-using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.ORM.Mapping;
@@ -74,13 +72,7 @@ public class Program
                 cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies());
             });
 
-            /*
-            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);
-            builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
-            builder.Services.AddAutoMapper(typeof(CreateUserRequestProfile).Assembly);  //
-            builder.Services.AddAutoMapper(typeof(UserConfiguration).Assembly);         //
-            */
+            
             builder.Services.AddDbContext<DefaultContext>(
 
                 options =>
@@ -105,15 +97,6 @@ public class Program
                 //.WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
                 .ReadFrom.Configuration(hostingContext.Configuration));
 
-            /*
-            builder.Services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssemblies(
-                    typeof(ApplicationLayer).Assembly,
-                    typeof(Program).Assembly
-                );
-            });
-            */
             builder.Services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(ApplicationLayer).Assembly)
             );

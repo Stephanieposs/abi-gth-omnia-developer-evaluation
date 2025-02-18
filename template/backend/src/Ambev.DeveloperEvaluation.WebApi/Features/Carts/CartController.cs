@@ -7,8 +7,8 @@ using Ambev.DeveloperEvaluation.Application.Products;
 using Ambev.DeveloperEvaluation.Application.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
-using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
 using AutoMapper;
 using FluentValidation;
@@ -51,22 +51,11 @@ public class CartController : ControllerBase
                 .Where(q => !q.Key.StartsWith("_")) // Exclude pagination and order keys
                 .ToDictionary(q => q.Key, q => q.Value.ToString());
 
-            //var (items, totalItems) = await _cartService.GetFilteredAndOrderedCartsAsync(_page, _size, _order, filtersExtract); //filters ?? new Dictionary<string, string>()
-            //var totalPages = (int)Math.Ceiling(totalItems / (double)_size);
-
             var query = new GetAllCartsQuery(_page, _size, _order, filtersExtract ?? new Dictionary<string, string>());
             var result = await _mediator.Send(query);
 
             return Ok(result);
 
-            // return customized json
-            /*return Ok(new
-            {
-                data = items,
-                totalItems,
-                currentPage = _page,
-                totalPages
-            });*/
         }
         catch (Exception ex)
         {
@@ -79,12 +68,11 @@ public class CartController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Roles = "Admin, Manager, Customer")]
-    public async Task<ActionResult<Cart>> GetById(int id)
+    public async Task<ActionResult<GetCartResponse>> GetById(int id)
     {
         //var cart = await _cartService.GetCartByIdAsync(id);
         var query = new GetCartQuery(id);
         var cart = await _mediator.Send(query);
-
 
 
         if (cart == null)
@@ -92,6 +80,9 @@ public class CartController : ControllerBase
             _logger.LogWarning("Cart com ID {id} não encontrado.", id);
             return NotFound("Cart Not Found");
         }
+
+        //var cartResponse =  _mapper.Map<GetCartResponse>(cart);
+
         return Ok(cart);
     }
 
@@ -127,72 +118,6 @@ public class CartController : ControllerBase
             return StatusCode(500, "Internal Server Error");
         }
     }
-
-    /*
-    [HttpPut("{id}")]
-    [Authorize(Roles = "Admin, Manager, Customer")]
-    public async Task<ActionResult> Update(int id, UpdateCartRequest updatedCart)
-    {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("ModelState is not valid when updating to {updatedCart}", updatedCart);
-            return BadRequest();
-        }
-
-        try
-        {
-            var command = _mapper.Map<UpdateCartCommand>(updatedCart);
-            var createdCart = await _mediator.Send(command);
-            //var existingCart = await _cartService.GetCartByIdAsync(id);
-            if (existingCart == null)
-            {
-                _logger.LogWarning("Cart {id} wasn't found", id);
-                return NotFound();
-            }
-
-            //existingCart.Date = updatedCart.Date;
-            //existingCart.UserId = updatedCart.UserId;
-             
-            // Update products in the cart
-            var updatedProductIds = updatedCart.Products.Select(p => p.ProductId).ToHashSet();
-
-            // Remove products that are no longer in the updated cart
-            existingCart.CartProductsList.RemoveAll(p => !updatedProductIds.Contains(p.ProductId));
-
-            // Add or update products
-            foreach (var productDto in updatedCart.Products)
-            {
-                var product = existingCart.CartProductsList
-                    .FirstOrDefault(p => p.ProductId == productDto.ProductId);
-
-                if (product == null)
-                {
-                    // Add new product if it doesn't exist
-                    existingCart.CartProductsList.Add(new CartProduct
-                    {
-                        ProductId = productDto.ProductId,
-                        Quantity = productDto.Quantity,
-                        CartId = existingCart.Id // Ensure the CartId is set
-                    });
-                }
-                else
-                {
-                    // Update existing product
-                    product.Quantity = productDto.Quantity;
-                }
-            }
-
-            await _cartService.UpdateCartAsync(existingCart);
-            return Ok(existingCart);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occourred while updating cart");
-            return StatusCode(500, "Internal Server Error");
-        }
-
-       
-    }*/
 
 
     [HttpPut("{id}")]
