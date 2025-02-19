@@ -7,9 +7,13 @@ using Ambev.DeveloperEvaluation.Application.Products;
 using Ambev.DeveloperEvaluation.Application.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetByIdProduct;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
@@ -19,6 +23,7 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using OneOf.Types;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts;
 
@@ -81,9 +86,14 @@ public class CartController : ControllerBase
             return NotFound("Cart Not Found");
         }
 
-        //var cartResponse =  _mapper.Map<GetCartResponse>(cart);
+        var response = _mapper.Map<GetCartResponse>(cart);
 
-        return Ok(cart);
+        return Ok(new ApiResponseWithData<GetCartResponse>
+        {
+            Success = true,
+            Message = "Product retrieved successfully",
+            Data = response
+        });
     }
 
     [HttpPost]
@@ -110,7 +120,13 @@ public class CartController : ControllerBase
             var command = _mapper.Map<CreateCartCommand>(request);
             var createdCart = await _mediator.Send(command);
 
-            return Ok(createdCart);
+            return Created(string.Empty, new ApiResponseWithData<CreateCartResult>
+            {
+                Success = true,
+                Message = "Cart created successfully",
+                Data = createdCart
+            });
+
         }
         catch (Exception ex)
         {
@@ -152,7 +168,12 @@ public class CartController : ControllerBase
                 return NotFound();
             }
 
-            return Ok(updatedCartResult);
+            return Created(string.Empty, new ApiResponseWithData<UpdateCartResult>
+            {
+                Success = true,
+                Message = "Cart updated successfully",
+                Data = updatedCartResult
+            });
         }
         catch (Exception ex)
         {
@@ -180,7 +201,11 @@ public class CartController : ControllerBase
             var command = new DeleteCartCommand(id);
             await _mediator.Send(command);
 
-            return Ok();
+            return Created(string.Empty, new ApiResponse
+            {
+                Success = true,
+                Message = "Cart deleted successfully"
+            });
         }
         catch (Exception ex)
         {

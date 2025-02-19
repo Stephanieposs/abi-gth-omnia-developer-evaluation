@@ -6,9 +6,12 @@ using Ambev.DeveloperEvaluation.Application.Products.GetByCategory;
 using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 using Ambev.DeveloperEvaluation.Application.Products.UpdateProduct;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetByIdProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
+using Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
+using Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUser;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.Results;
@@ -55,7 +58,15 @@ public class ProductsController : ControllerBase
             var query = new GetAllProductsQuery(_page, _size, _order, filtersExtract);
             var result = await _mediator.Send(query);
 
-            return Ok(result);
+
+            var response = _mapper.Map<GetAllProductsResponse>(result);
+
+            return Ok(new ApiResponseWithData<GetAllProductsResponse>
+            {
+                Success = true,
+                Message = "Get all products successfully",
+                Data = response
+            });
         }
         catch (Exception ex)
         {
@@ -79,7 +90,14 @@ public class ProductsController : ControllerBase
             return NotFound("Product not found");
         }
 
-        return Ok(result);
+        var response = _mapper.Map<GetByIdProductResponse>(result);
+
+        return Ok(new ApiResponseWithData<GetByIdProductResponse>
+        {
+            Success = true,
+            Message = "Product retrieved successfully",
+            Data = response
+        });
     }
 
     // return all categories 
@@ -93,7 +111,12 @@ public class ProductsController : ControllerBase
             var query = new GetAllCategoriesQuery();
             var result = await _mediator.Send(query);
 
-            return Ok(result);
+            return Ok(new ApiResponseWithData<IEnumerable<string>>
+            {
+                Success = true,
+                Message = "Get all categories successfully",
+                Data = result
+            });
         }
         catch (Exception ex)
         {
@@ -119,7 +142,12 @@ public class ProductsController : ControllerBase
             return NotFound("Category not found");
         }
 
-        return Ok(result);
+        return Ok(new ApiResponseWithData<object>
+        {
+            Success = true,
+            Message = "Product by category retrieved successfully",
+            Data = result
+        });
     }
 
     [HttpPost]
@@ -155,7 +183,13 @@ public class ProductsController : ControllerBase
             return StatusCode(500, "Failed to create product response.");
         }
 
-        return Ok(response);
+        //return Ok(response);
+        return Created(string.Empty, new ApiResponseWithData<CreateProductResponse>
+        {
+            Success = true,
+            Message = "Product created successfully",
+            Data = response
+        });
 
     }
 
@@ -194,7 +228,12 @@ public class ProductsController : ControllerBase
             return StatusCode(500, "Failed to update product response.");
         }
 
-        return Ok(response);
+        return Created(string.Empty, new ApiResponseWithData<UpdateProductResponse>
+        {
+            Success = true,
+            Message = "Product updated successfully",
+            Data = response
+        });
     }
 
     [HttpDelete("{id}")]
@@ -211,6 +250,10 @@ public class ProductsController : ControllerBase
             return NotFound("Product not found");
         }
 
-        return Ok("Product deleted successfully");
+        return Created(string.Empty, new ApiResponse
+        {
+            Success = true,
+            Message = "Product deleted successfully"
+        });
     }
 }

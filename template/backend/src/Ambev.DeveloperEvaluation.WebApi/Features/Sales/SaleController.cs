@@ -4,6 +4,7 @@ using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.Application.Carts.GetAllCarts;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
+using Ambev.DeveloperEvaluation.Application.Products.GetAllProducts;
 using Ambev.DeveloperEvaluation.Application.Sales;
 using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.Application.Sales.DeleteSale;
@@ -11,6 +12,10 @@ using Ambev.DeveloperEvaluation.Application.Sales.GetAllSales;
 using Ambev.DeveloperEvaluation.Application.Sales.GetSale;
 using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.WebApi.Common;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetByIdProduct;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetAllSales;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSaleById;
@@ -59,7 +64,12 @@ public class SalesController : ControllerBase
 
             var responseMap = _mapper.Map<CreateSaleResponse>(createdSale);
 
-            return Ok(responseMap);
+            return Created(string.Empty, new ApiResponseWithData<CreateSaleResponse>
+            {
+                Success = true,
+                Message = "Sale created successfully",
+                Data = responseMap
+            });
         }
         catch (Exception ex)
         {
@@ -78,7 +88,12 @@ public class SalesController : ControllerBase
 
         var response = _mapper.Map<List<GetAllSalesResponse>>(result);
 
-        return Ok(response);
+        return Ok(new ApiResponseWithData<List<GetAllSalesResponse>>
+        {
+            Success = true,
+            Message = "Get all sales successfully",
+            Data = response
+        });
     }
 
     [HttpGet("{saleNumber}")]
@@ -93,7 +108,12 @@ public class SalesController : ControllerBase
 
         var responseMap = _mapper.Map<GetSaleByIdResponse>(sale);
 
-        return Ok(responseMap);
+        return Ok(new ApiResponseWithData<GetSaleByIdResponse>
+        {
+            Success = true,
+            Message = "Sale retrieved successfully",
+            Data = responseMap
+        });
     }
 
     [HttpPut("{saleNumber}")]
@@ -115,7 +135,12 @@ public class SalesController : ControllerBase
 
             var response = _mapper.Map<UpdateSaleResponse>(createdSale);
 
-            return Ok(response);
+            return Created(string.Empty, new ApiResponseWithData<UpdateSaleResponse>
+            {
+                Success = true,
+                Message = "Sale updated successfully",
+                Data = response
+            });
         }
         catch (Exception ex)
         {
@@ -144,7 +169,11 @@ public class SalesController : ControllerBase
             var command = new DeleteSaleCommand(saleNumber);
             await _mediator.Send(command);
 
-            return Ok($"Deleted {saleNumber}");
+            return Created(string.Empty, new ApiResponse
+            {
+                Success = true,
+                Message = "Sale deleted successfully"
+            });
         }
         catch (Exception ex)
         {

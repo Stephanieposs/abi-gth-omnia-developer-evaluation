@@ -8,7 +8,6 @@ public class GetByIdProductProfile : Profile
 
     public GetByIdProductProfile()
     {
-        CreateMap<GetByIdProductResponse, Product>(); // Map from request to domain entity
-        CreateMap<GetByIdProductRatingResponse, Rating>();
+        CreateMap<GetByIdProductResponse, Product>().ReverseMap(); 
     }
 }
