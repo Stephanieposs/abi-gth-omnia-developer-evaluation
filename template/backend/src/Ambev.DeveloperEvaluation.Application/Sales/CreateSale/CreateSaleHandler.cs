@@ -47,12 +47,10 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, Sale>
         {
             sale.Items = new List<SaleItem>();
             _logger.LogWarning("saleItems null, new saleItem list was created at {sale}", sale);
-            //Console.WriteLine("console new List");
         }
 
         var saleItems = new List<SaleItem>();
 
-        // 3️⃣ Buscar os produtos e criar os itens da venda
         foreach (var cartProduct in cart.CartProductsList)
         {
             var productQuery = new GetProductCommand(cartProduct.ProductId);
@@ -61,7 +59,7 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, Sale>
             if (product == null)
             {
                 _logger.LogError("Product {ProductId} not found", cartProduct.ProductId);
-                return null; // Ignorar este item se o produto não existir
+                return null; 
             }
 
             var cartCart =  _mapper.Map<Cart>(cart);
@@ -78,15 +76,13 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, Sale>
                 IsCancelled = false
             };
 
-            // 4️⃣ Calcular descontos e totais
             saleItem.CalculateDiscountAndValidate();
             saleItem.Total = saleItem.UnitPrice * saleItem.Quantity * (1 - saleItem.Discount);
 
             saleItems.Add(saleItem);
         }
 
-        // 5️⃣ Associar os itens à venda e calcular o total
-        //sale.Items = saleItems;
+        sale.Items ??= new List<SaleItem>();
         sale.Items.AddRange(saleItems);
 
         sale.TotalAmount = sale.Items.Sum(item => item.Total);

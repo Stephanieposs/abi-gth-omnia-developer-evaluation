@@ -30,12 +30,6 @@ public class DependencyInjectionTests
         _serviceProvider = builder.Services.BuildServiceProvider();
     }
 
-    [Fact]
-    public void Should_Resolve_CartService()
-    {
-        //var service = _serviceProvider.GetService<ICartService>();
-        //Assert.NotNull(service); // Test passes if CartService is correctly registered
-    }
 
     [Fact]
     public void Should_Resolve_CartRepository()
@@ -45,27 +39,12 @@ public class DependencyInjectionTests
     }
 
     [Fact]
-    public void Should_Resolve_SaleService()
-    {
-        //var service = _serviceProvider.GetService<ISaleService>();
-        //Assert.NotNull(service); // Test passes if SaleService is correctly registered
-    }
-
-    [Fact]
     public void Should_Resolve_SaleRepository()
     {
         var repository = _serviceProvider.GetService<ISaleRepository>();
         Assert.NotNull(repository); // Test passes if SaleRepository is correctly registered
     }
 
-    /*
-    [Fact]
-    public void Should_Resolve_ProductService()
-    {
-        var service = _serviceProvider.GetService<IProductService>();
-        Assert.NotNull(service); // Test passes if ProductService is correctly registered
-    }
-    */
     [Fact]
     public void Should_Resolve_ProductRepository()
     {

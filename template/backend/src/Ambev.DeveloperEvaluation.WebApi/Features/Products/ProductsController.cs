@@ -61,12 +61,9 @@ public class ProductsController : ControllerBase
 
             var response = _mapper.Map<GetAllProductsResponse>(result);
 
-            return Ok(new ApiResponseWithData<GetAllProductsResponse>
-            {
-                Success = true,
-                Message = "Get all products successfully",
-                Data = response
-            });
+            return new OkObjectResult(response);
+
+            //return Ok(response);
         }
         catch (Exception ex)
         {
