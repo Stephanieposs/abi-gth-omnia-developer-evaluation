@@ -29,9 +29,9 @@ public class UpdateCartCommand : IRequest<UpdateCartResult>
 
     public UpdateCartCommand(int cartId, int userId, DateTime date, List<UpdateCartProductResult> products) // 
     {
-        Date = date;
-        UserId = userId;
-        CartProductsList = products;
         CartId = cartId;
+        UserId = userId;
+        Date = date;
+        CartProductsList = products;
     }
 }

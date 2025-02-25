@@ -13,9 +13,13 @@ using Ambev.DeveloperEvaluation.Application.Products.GetByCategory;
 using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 using Ambev.DeveloperEvaluation.Application.Products.UpdateProduct;
 using Ambev.DeveloperEvaluation.Application.Sales;
+using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.Application.Sales.DeleteSale;
+using Ambev.DeveloperEvaluation.Application.Sales.GetAllSales;
+using Ambev.DeveloperEvaluation.Application.Sales.GetSale;
+using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.Services;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,10 +31,6 @@ public class ApplicationModuleInitializer : IModuleInitializer
     public void Initialize(WebApplicationBuilder builder)
     {
         builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
-
-        //builder.Services.AddScoped<ICartService, CartService>();
-        builder.Services.AddScoped<ISaleService, SaleService>();
-        //builder.Services.AddScoped<IProductService, ProductService>();
 
         // Register Products Handlers
         builder.Services.AddTransient<IRequestHandler<CreateProductCommand, CreateProductResult>, CreateProductHandler>();
@@ -45,7 +45,13 @@ public class ApplicationModuleInitializer : IModuleInitializer
         builder.Services.AddTransient<IRequestHandler<CreateCartCommand, CreateCartResult>,CreateCartHandler>();
         builder.Services.AddTransient<IRequestHandler<DeleteCartCommand, bool>, DeleteCartHandler>();
         builder.Services.AddTransient<IRequestHandler<GetAllCartsQuery, GetAllCartsPagedResponse<GetAllCartsResponse>>, GetAllCartsHandler>();
-        builder.Services.AddTransient<IRequestHandler<GetCartQuery, GetCartResponse>, GetCartHandler>();
         builder.Services.AddTransient<IRequestHandler<UpdateCartCommand, UpdateCartResult>, UpdateCartHandler>();
+
+        // Register Sales Handlers
+        builder.Services.AddTransient<IRequestHandler<UpdateSaleCommand, Sale>, UpdateSaleHandler>();
+        builder.Services.AddTransient<IRequestHandler<GetSaleQuery, Sale>, GetSaleHandler>();
+        builder.Services.AddTransient<IRequestHandler<GetAllSalesQuery, IEnumerable<Sale>>, GetAllSalesHandler>();
+        builder.Services.AddTransient<IRequestHandler<DeleteSaleCommand, bool>, DeleteSaleHandler>();
+        builder.Services.AddTransient<IRequestHandler<CreateSaleCommand, Sale>,CreateSaleHandler>();
     }
 }

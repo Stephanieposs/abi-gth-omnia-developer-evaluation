@@ -1,5 +1,4 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Repositories;
-using Ambev.DeveloperEvaluation.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;

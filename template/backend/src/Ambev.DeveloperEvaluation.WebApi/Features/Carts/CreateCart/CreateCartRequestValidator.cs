@@ -8,7 +8,8 @@ public class CreateCartRequestValidator : AbstractValidator<CreateCartRequest>
     public CreateCartRequestValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty();
+            .NotEmpty()
+            .GreaterThan(-1);
 
         RuleFor(x => x.Date)
             .NotEmpty();

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 
-public class GetCartHandler : IRequestHandler<GetCartQuery, GetCartResponse>
+public class GetCartHandler : IRequestHandler<GetCartQuery, Cart>
 {
     private readonly ICartRepository _repo;
     private readonly ILogger<GetCartHandler> _logger;
@@ -25,7 +25,7 @@ public class GetCartHandler : IRequestHandler<GetCartQuery, GetCartResponse>
         _mapper = mapper;
     }
 
-    public async Task<GetCartResponse> Handle(GetCartQuery request, CancellationToken cancellationToken)
+    public async Task<Cart> Handle(GetCartQuery request, CancellationToken cancellationToken)
     {
         var cart = await _repo.GetCartByIdAsync(request.Id);
 
@@ -35,6 +35,9 @@ public class GetCartHandler : IRequestHandler<GetCartQuery, GetCartResponse>
             return null;
         }
 
+        return cart;
+
+        /*
         return new GetCartResponse
         {
             UserId = cart.UserId,
@@ -44,7 +47,7 @@ public class GetCartHandler : IRequestHandler<GetCartQuery, GetCartResponse>
                 ProductId = product.ProductId,
                 Quantity = product.Quantity
             }).ToList()
-        };
+        };*/
     }
 
 }
